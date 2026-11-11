@@ -1,0 +1,11 @@
+body{
+    background-color:black;
+    color:white;
+    font-family: Arial, sans-serif;
+}
+#jogo{
+    width: 1200px;
+    height: 700px;
+    background-color: #4b9b43;
+    margin:auto;
+}
