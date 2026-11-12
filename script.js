@@ -1,0 +1,263 @@
+"use strict";
+/* ============================================================
+   DRAKMOR — RPG 2D
+   Engine simples: Canvas, estados, colisão, combate, quests e save.
+   ============================================================ */
+const canvas=document.getElementById("world"),ctx=canvas.getContext("2d");
+const W=canvas.width,H=canvas.height,TILE=48,MAP_W=30,MAP_H=22;
+const keys={};
+let gameStarted=false,paused=false,dialogueQueue=[],dialogueDone=null;
+let lastTime=0,attackCooldown=0,spellCooldown=0,enemySpawnTimer=0;
+const world={
+ name:"Vale de Cinzas",chapter:1,day:1,
+ map:[],objects:[],enemies:[],particles:[],
+ camera:{x:0,y:0},
+};
+const player={
+ x:6*TILE,y:10*TILE,w:26,h:34,speed:190,
+ hp:100,maxHp:100,mp:30,maxMp:30,xp:0,nextXp:50,
+ level:1,baseAttack:12,defense:2,gold:12,
+ facing:"down",invulnerable:0,potions:2,
+ name:"Errante",weapon:"Lâmina gasta",armor:"Casaco de couro",
+ inventory:[{name:"Poção de vida",qty:2,desc:"Recupera 45 pontos de vida."},{name:"Pão de viagem",qty:2,desc:"Recupera 15 pontos de vida."}],
+ quests:{elder:false,slimes:0,herbs:0,bandit:false,crypt:false},
+ flags:{intro:false,elderReward:false,gateOpen:false,cryptBoss:false}
+};
+const npcs=[
+ {id:"elder",name:"Ancião Oren",x:9*TILE,y:8*TILE,color:"#d5c6a2",type:"elder"},
+ {id:"merchant",name:"Mira, a mercadora",x:13*TILE,y:8*TILE,color:"#d5a65e",type:"merchant"},
+ {id:"guard",name:"Guarda Bren",x:18*TILE,y:11*TILE,color:"#8b9db5",type:"guard"},
+ {id:"healer",name:"Ilyra, curandeira",x:7*TILE,y:14*TILE,color:"#8fc5b2",type:"healer"}
+];
+const enemyTypes={
+ slime:{name:"Gosma cinzenta",hp:32,attack:7,xp:12,gold:3,speed:48,color:"#86b878",radius:15},
+ wolf:{name:"Lobo da névoa",hp:48,attack:10,xp:18,gold:5,speed:78,color:"#a2a6aa",radius:16},
+ skeleton:{name:"Esqueleto errante",hp:65,attack:13,xp:25,gold:8,speed:55,color:"#d0c8ac",radius:16},
+ bandit:{name:"Saqueador",hp:85,attack:15,xp:35,gold:14,speed:65,color:"#a65e50",radius:17},
+ boss:{name:"Cavaleiro sem rosto",hp:260,attack:22,xp:130,gold:90,speed:48,color:"#8d6ab5",radius:25}
+};
+let currentZone="village",nearby=null;
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function log(msg,type=""){const el=document.getElementById("log");const p=document.createElement("p");p.className=type;p.textContent=msg;el.prepend(p);while(el.children.length>35)el.lastChild.remove()}
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
+function rects(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+function center(o){return{x:o.x+o.w/2,y:o.y+o.h/2}}
+function makeMap(){
+ world.map=Array.from({length:MAP_H},(_,y)=>Array.from({length:MAP_W},(_,x)=>{
+  if(x===0||y===0||x===MAP_W-1||y===MAP_H-1)return 1;
+  return 0;
+ }));
+ const blockers=[[3,3],[4,3],[3,4],[20,3],[21,3],[22,3],[23,4],[3,17],[4,17],[5,17],[24,16],[25,16],[25,17],[15,3],[16,3],[16,4],[2,10],[2,11],[27,10],[27,11]];
+ blockers.forEach(([x,y])=>world.map[y][x]=1);
+ for(let y=4;y<7;y++)for(let x=24;x<28;x++)if(!(x===24&&y===4))world.map[y][x]=2;
+ world.objects=[
+  {type:"sign",x:5*TILE,y:9*TILE,w:30,h:30,text:"Placa da vila"},
+  {type:"herb",x:11*TILE,y:15*TILE,w:22,h:22,active:true},
+  {type:"herb",x:22*TILE,y:7*TILE,w:22,h:22,active:true},
+  {type:"herb",x:25*TILE,y:13*TILE,w:22,h:22,active:true},
+  {type:"chest",x:22*TILE,y:18*TILE,w:30,h:26,active:true},
+  {type:"portal",x:27*TILE,y:19*TILE,w:42,h:42}
+ ];
+}
+function newGame(){
+ Object.assign(player,{x:6*TILE,y:10*TILE,hp:100,maxHp:100,mp:30,maxMp:30,xp:0,nextXp:50,level:1,baseAttack:12,defense:2,gold:12,potions:2,inventory:[{name:"Poção de vida",qty:2,desc:"Recupera 45 pontos de vida."},{name:"Pão de viagem",qty:2,desc:"Recupera 15 pontos de vida."}],quests:{elder:false,slimes:0,herbs:0,bandit:false,crypt:false},flags:{intro:false,elderReward:false,gateOpen:false,cryptBoss:false}});
+ world.chapter=1;world.day=1;world.enemies=[];currentZone="village";makeMap();spawnInitialEnemies();gameStarted=true;
+ document.getElementById("overlay").style.display="none";
+ log("Você chegou ao Vale de Cinzas.","gold");startIntro();updateUI();requestAnimationFrame(loop);
+}
+function spawnInitialEnemies(){
+ world.enemies=[];
+ for(let i=0;i<5;i++)spawnEnemy("slime",rand(15,25)*TILE,rand(13,18)*TILE);
+ for(let i=0;i<2;i++)spawnEnemy("wolf",rand(18,25)*TILE,rand(3,6)*TILE);
+}
+function spawnEnemy(type,x,y){
+ const d=enemyTypes[type];world.enemies.push({type,name:d.name,x,y,w:d.radius*2,h:d.radius*2,hp:d.hp,maxHp:d.hp,attack:d.attack,xp:d.xp,gold:d.gold,speed:d.speed,color:d.color,aggro:false,attackTimer:0,dead:false});
+}
+function startIntro(){
+ say("Narrador","O vento atravessa as casas vazias do Vale de Cinzas. Você desperta junto ao antigo marco da estrada, com uma moeda negra na mão. Nela, uma frase foi gravada: “Quando o sino tocar pela terceira vez, não confie nos mortos.”",()=>say("Narrador","Ao longe, um sino toca. Uma vez. A vila parece prender a respiração."));
+}
+function say(speaker,text,done){dialogueQueue.push({speaker,text,done});if(dialogueQueue.length===1)showDialogue()}
+function showDialogue(){const d=dialogueQueue[0];if(!d)return;document.getElementById("speaker").textContent=d.speaker;document.getElementById("dialogueText").textContent=d.text;document.getElementById("dialogue").style.display="block";paused=true}
+function nextDialogue(){const d=dialogueQueue.shift();document.getElementById("dialogue").style.display="none";if(d&&d.done)d.done();if(dialogueQueue.length)showDialogue();else paused=false}
+function dialogueAltAction(){nextDialogue()}
+function interact(){
+ if(!gameStarted||paused)return;
+ const px=player.x+player.w/2,py=player.y+player.h/2;
+ let candidates=[...npcs,...world.objects.filter(o=>o.active!==false)];
+ nearby=null;let best=62;
+ for(const o of candidates){const ox=o.x+(o.w||24)/2,oy=o.y+(o.h||24)/2;const dist=Math.hypot(px-ox,py-oy);if(dist<best){best=dist;nearby=o}}
+ if(!nearby){toast("Não há nada para interagir por perto.");return}
+ if(nearby.type==="elder")talkElder();
+ else if(nearby.type==="merchant")talkMerchant();
+ else if(nearby.type==="guard")talkGuard();
+ else if(nearby.type==="healer")talkHealer();
+ else if(nearby.type==="herb")collectHerb(nearby);
+ else if(nearby.type==="chest")openChest(nearby);
+ else if(nearby.type==="sign")say("Placa","VALE DE CINZAS — “A estrada termina onde a floresta começa. Não siga as luzes azuis.”");
+ else if(nearby.type==="portal")enterCrypt();
+}
+function talkElder(){
+ if(!player.quests.elder){
+  say("Ancião Oren","Você não é daqui. Vi a moeda em sua mão… Essa marca pertence à Ordem do Primeiro Rei. Escute: criaturas corrompidas rondam a estrada. Traga-me 3 núcleos de gosma e 2 ervas-lua. Talvez eu consiga entender por que a moeda escolheu você.",()=>{
+   player.quests.elder=true;log("Missão iniciada: Ecos na Estrada.","gold");updateUI();
+  });
+ }else if(player.quests.slimes>=3&&player.quests.herbs>=2&&!player.flags.elderReward){
+  say("Ancião Oren","Os núcleos ainda pulsam. E estas ervas… sim, são ervas-lua. A corrupção está vindo das criptas sob a colina. Pegue esta chave. O guarda Bren conhece a entrada.",()=>{
+   player.flags.elderReward=true;player.inventory.push({name:"Chave antiga",qty:1,desc:"Abre o acesso às criptas esquecidas."});player.gold+=35;gainXP(40);log("Missão concluída: Ecos na Estrada.","good");updateUI();
+  });
+ }else if(player.flags.elderReward){
+  say("Ancião Oren","A cripta fica além do portão de pedra, a leste. Não deixe que o cavaleiro encontre a moeda.");
+ }else say("Ancião Oren","Ainda preciso de 3 núcleos de gosma e 2 ervas-lua. Explore a estrada e a clareira.");
+}
+function talkMerchant(){
+ say("Mira, a mercadora","Tenho algumas provisões. A estrada está perigosa. Uma poção custa 15 moedas. Quer comprar?",()=>{
+  if(player.gold>=15){player.gold-=15;addItem("Poção de vida",1,"Recupera 45 pontos de vida.");log("Você comprou uma poção.","good");updateUI()}else toast("Você não tem ouro suficiente.");
+ });
+}
+function talkGuard(){
+ if(player.flags.elderReward&&!player.flags.gateOpen){
+  say("Guarda Bren","Oren entregou a chave? Então a passagem é sua. Mas ouvi passos metálicos lá embaixo. Se entrar, esteja pronto.",()=>{player.flags.gateOpen=true;toast("A passagem para a cripta foi liberada.");});
+ }else if(player.flags.gateOpen)say("Guarda Bren","A cripta está aberta. Volte vivo, viajante.");
+ else say("Guarda Bren","O portão antigo está selado. O ancião Oren guarda a chave.");
+}
+function talkHealer(){
+ say("Ilyra, curandeira","A luz ainda responde às minhas mãos. Posso restaurar sua vida e mana por 10 moedas.",()=>{
+  if(player.gold>=10){player.gold-=10;player.hp=player.maxHp;player.mp=player.maxMp;log("Ilyra restaurou suas forças.","good");updateUI()}else toast("Você precisa de 10 moedas.");
+ });
+}
+function collectHerb(o){
+ o.active=false;player.quests.herbs++;addItem("Erva-lua",1,"Ingrediente prateado usado na missão do ancião.");log("Você coletou uma Erva-lua.","good");updateUI();
+}
+function openChest(o){
+ if(!o.active){toast("O baú está vazio.");return}
+ o.active=false;player.gold+=rand(18,32);addItem("Poção de vida",1,"Recupera 45 pontos de vida.");say("Baú antigo","Dentro do baú há moedas antigas e uma poção intacta.");updateUI();
+}
+function enterCrypt(){
+ if(!player.flags.gateOpen){toast("O acesso está selado. Converse com Oren e Bren.");return}
+ if(currentZone==="crypt")return;
+ currentZone="crypt";world.name="Cripta do Primeiro Rei";player.x=5*TILE;player.y=5*TILE;
+ world.enemies=[];for(let i=0;i<5;i++)spawnEnemy("skeleton",rand(9,24)*TILE,rand(7,17)*TILE);
+ if(!player.flags.cryptBoss)spawnEnemy("boss",24*TILE,17*TILE);
+ document.getElementById("location").textContent=world.name.toUpperCase();log("Você desceu à Cripta do Primeiro Rei.","gold");toast("A atmosfera ficou mais pesada.");
+}
+function exitCrypt(){currentZone="village";world.name="Vale de Cinzas";player.x=27*TILE;player.y=18*TILE;world.enemies=[];spawnInitialEnemies();document.getElementById("location").textContent=world.name.toUpperCase()}
+function addItem(name,qty,desc){let it=player.inventory.find(i=>i.name===name);if(it)it.qty+=qty;else player.inventory.push({name,qty,desc})}
+function useItem(name){
+ const it=player.inventory.find(i=>i.name===name&&i.qty>0);if(!it)return;
+ if(name==="Poção de vida"){if(player.hp===player.maxHp){toast("Sua vida já está cheia.");return}player.hp=Math.min(player.maxHp,player.hp+45)}
+ else if(name==="Pão de viagem"){if(player.hp===player.maxHp){toast("Sua vida já está cheia.");return}player.hp=Math.min(player.maxHp,player.hp+15)}
+ else {toast("Este item não pode ser usado agora.");return}
+ it.qty--;if(it.qty===0)player.inventory=player.inventory.filter(i=>i.qty>0);
+ log(name+" utilizado.","good");updateUI();openInventory();
+}
+function openInventory(){
+ const items=player.inventory.map(i=>`<div class="item"><b>${i.name} × ${i.qty}</b><span>${i.desc}</span>${["Poção de vida","Pão de viagem"].includes(i.name)?`<p><button onclick="useItem('${i.name}')">Usar</button></p>`:""}</div>`).join("");
+ showModal("Inventário",`<p>O que você carrega pode decidir se verá o próximo amanhecer.</p><div class="modalgrid">${items||"Bolsa vazia."}</div><div class="menuButtons"><button onclick="closeModal()">Fechar</button></div>`);
+}
+function showModal(title,body){const ov=document.getElementById("overlay");ov.style.display="flex";ov.innerHTML=`<div class="screen"><div class="kicker">DRAKMOR · REGISTRO DE JORNADA</div><h2>${title}</h2>${body}</div>`;paused=true}
+function closeModal(){document.getElementById("overlay").style.display="none";document.getElementById("overlay").innerHTML="";paused=false}
+function showMap(){
+ let body=currentZone==="village"?"Você está no <b>Vale de Cinzas</b>. A vila fica no centro-oeste. O ancião Oren está próximo ao marco; Mira vende provisões; Ilyra cura ferimentos. Ervas-lua brilham na clareira ao norte e ao leste. A passagem da cripta fica no extremo sudeste.":"Você está na <b>Cripta do Primeiro Rei</b>. Esqueletos guardam os corredores. Procure o Cavaleiro sem Rosto no salão inferior.";
+ showModal("Mapa e regiões",`<p>${body}</p><p><b>Objetivo:</b> explore, converse com personagens e siga as pistas no painel Jornada atual.</p><div class="menuButtons"><button onclick="closeModal()">Voltar ao jogo</button></div>`);
+}
+function showHelp(){showModal("Como jogar",`<p><b>Movimentação:</b> WASD ou setas. <b>Ataque:</b> Espaço ou botão Atacar. <b>Magia:</b> Q ou botão Magia. <b>Interagir:</b> E. <b>Inventário:</b> I.</p><p>Chegue perto de personagens, baús, placas e plantas e pressione E. Inimigos perseguem você quando chegam perto. Ataque olhando na direção do inimigo. A magia consome mana e causa dano em uma pequena área à sua frente.</p><p>Derrotar inimigos concede XP e ouro. Ao subir de nível, seus atributos aumentam e vida/mana são restauradas.</p><div class="menuButtons"><button onclick="closeModal()">Entendi</button></div>`)}
+function showCredits(){showModal("Créditos",`<p><b>DRAKMOR — As Cinzas do Primeiro Rei</b></p><p>Um pequeno RPG de fantasia criado em HTML, CSS e JavaScript puro, usando Canvas 2D e desenhos procedurais.</p><p>História, personagens, mundo, interface e código: projeto original para estudo e expansão.</p><div class="menuButtons"><button onclick="backToMenu()">Voltar</button></div>`)}
+function backToMenu(){location.reload()}
+function attack(){
+ if(!gameStarted||paused||attackCooldown>0)return;attackCooldown=.42;
+ const dir={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.facing],px=player.x+player.w/2,py=player.y+player.h/2;
+ let hit=0;
+ for(const e of world.enemies){if(e.dead)continue;const ex=e.x+e.w/2,ey=e.y+e.h/2,dx=ex-px,dy=ey-py,dist=Math.hypot(dx,dy);if(dist<75&&dx*dir[0]+dy*dir[1]>-10){damageEnemy(e,player.baseAttack+rand(-2,5));hit++}}
+ burst(px+dir[0]*35,py+dir[1]*35,"#f3d18a",8);if(!hit)log("Seu golpe cortou o ar.");}
+function castSpell(){
+ if(!gameStarted||paused||spellCooldown>0)return;if(player.mp<10){toast("Mana insuficiente.");return}
+ player.mp-=10;spellCooldown=1.2;const dir={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.facing],px=player.x+player.w/2+dir[0]*38,py=player.y+player.h/2+dir[1]*38;let hit=0;
+ for(const e of world.enemies){if(e.dead)continue;const d=Math.hypot(e.x+e.w/2-px,e.y+e.h/2-py);if(d<90){damageEnemy(e,28+player.level*4);hit++}}
+ burst(px,py,"#80c9ff",24);log(hit?"A magia atingiu "+hit+" inimigo(s)!":"Você lançou uma esfera arcana.","good");updateUI();
+}
+function damageEnemy(e,amount){
+ e.hp-=amount;e.aggro=true;burst(e.x+e.w/2,e.y+e.h/2,"#f3b2a2",5);
+ log(`${e.name}: -${amount} HP`,"good");
+ if(e.hp<=0){e.dead=true;player.xp+=e.xp;player.gold+=e.gold;if(e.type==="slime")player.quests.slimes++;if(e.type==="boss"){player.flags.cryptBoss=true;player.quests.crypt=true;say("Narrador","O Cavaleiro sem Rosto cai de joelhos. A armadura se desfaz em cinzas. Sob ela, não existe corpo — apenas uma chama azul, que sussurra seu nome antes de desaparecer. A moeda em sua mão se parte ao meio. A primeira fechadura foi quebrada, mas algo muito maior acaba de acordar.");world.chapter=2;log("Chefe derrotado! Capítulo II desbloqueado.","gold");}
+  log(`${e.name} derrotado: +${e.xp} XP, +${e.gold} ouro.`,"good");checkLevel();if(e.type==="slime"&&Math.random()<.35)addItem("Núcleo de gosma",1,"Fragmento gelatinoso pedido pelo ancião.");
+ }
+ updateUI();
+}
+function checkLevel(){while(player.xp>=player.nextXp){player.xp-=player.nextXp;player.level++;player.nextXp=Math.floor(player.nextXp*1.45);player.maxHp+=18;player.maxMp+=7;player.baseAttack+=4;player.defense+=1;player.hp=player.maxHp;player.mp=player.maxMp;say("Sistema","SUBIU DE NÍVEL! Seus atributos aumentaram. Vida e mana foram restauradas.");log("Você alcançou o nível "+player.level+"!","gold")}}
+function gainXP(n){player.xp+=n;checkLevel();updateUI()}
+function burst(x,y,color,n){for(let i=0;i<n;i++)world.particles.push({x,y,vx:(Math.random()-.5)*180,vy:(Math.random()-.5)*180,life:.35+Math.random()*.35,color})}
+function rest(){if(!gameStarted||paused)return;if(world.enemies.some(e=>!e.dead&&Math.hypot(e.x-player.x,e.y-player.y)<180)){toast("Perigo por perto! Não é seguro descansar.");return}player.hp=player.maxHp;player.mp=player.maxMp;world.day++;log("Você descansou. Um novo dia começa.","good");updateUI()}
+function enemyUpdate(dt){
+ for(const e of world.enemies){if(e.dead)continue;const dx=player.x-e.x,dy=player.y-e.y,d=Math.hypot(dx,dy);if(d<230)e.aggro=true;if(e.aggro&&d>35){const nx=dx/d,ny=dy/d;const speed=e.speed*(e.type==="boss"?.8:1);moveEntity(e,nx*speed*dt,ny*speed*dt)}
+  e.attackTimer-=dt;if(d<45&&e.attackTimer<=0&&player.invulnerable<=0){player.hp=Math.max(0,player.hp-Math.max(1,e.attack-player.defense));player.invulnerable=.7;e.attackTimer=1.1;burst(player.x+13,player.y+17,"#f16d6d",8);log(`${e.name} causou ${Math.max(1,e.attack-player.defense)} de dano.`,"bad");if(player.hp<=0)playerDown();updateUI()}
+ }
+ world.enemies=world.enemies.filter(e=>!e.dead||e.type==="boss");
+}
+function playerDown(){paused=true;say("Narrador","A escuridão toma seus sentidos. Quando desperta, você está de volta à vila. Parte do ouro foi perdida, mas sua jornada ainda não terminou.",()=>{player.hp=player.maxHp;player.mp=player.maxMp;player.gold=Math.floor(player.gold*.75);player.x=6*TILE;player.y=10*TILE;paused=false;updateUI()})}
+function moveEntity(e,dx,dy){
+ const nx={x:e.x+dx,y:e.y,w:e.w,h:e.h};if(!collides(nx))e.x=clamp(nx.x,TILE,WORLD_PIXEL_W-e.w-TILE);
+ const ny={x:e.x,y:e.y+dy,w:e.w,h:e.h};if(!collides(ny))e.y=clamp(ny.y,TILE,WORLD_PIXEL_H-e.h-TILE);
+}
+const WORLD_PIXEL_W=MAP_W*TILE,WORLD_PIXEL_H=MAP_H*TILE;
+function collides(r){
+ const x0=Math.floor(r.x/TILE),x1=Math.floor((r.x+r.w-1)/TILE),y0=Math.floor(r.y/TILE),y1=Math.floor((r.y+r.h-1)/TILE);
+ for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(!world.map[y]||world.map[y][x]===undefined||world.map[y][x]===1||world.map[y][x]===2)return true}
+ return false;
+}
+function playerUpdate(dt){
+ let dx=0,dy=0;if(keys.w||keys.ArrowUp){dy=-1;player.facing="up"}if(keys.s||keys.ArrowDown){dy=1;player.facing="down"}if(keys.a||keys.ArrowLeft){dx=-1;player.facing="left"}if(keys.d||keys.ArrowRight){dx=1;player.facing="right"}
+ if(dx&&dy){dx*=.707;dy*=.707}moveEntity(player,dx*player.speed*dt,dy*player.speed*dt);
+ player.invulnerable=Math.max(0,player.invulnerable-dt);attackCooldown=Math.max(0,attackCooldown-dt);spellCooldown=Math.max(0,spellCooldown-dt);
+}
+function update(dt){if(!gameStarted||paused)return;playerUpdate(dt);enemyUpdate(dt);for(const p of world.particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}world.particles=world.particles.filter(p=>p.life>0);updateUI();nearby=null}
+function draw(){
+ ctx.clearRect(0,0,W,H);
+ const camX=clamp(player.x-W/2,0,WORLD_PIXEL_W-W),camY=clamp(player.y-H/2,0,WORLD_PIXEL_H-H);world.camera.x=camX;world.camera.y=camY;
+ ctx.save();ctx.translate(-camX,-camY);
+ for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){const tile=world.map[y][x],px=x*TILE,py=y*TILE;
+  ctx.fillStyle=tile===1?"#263d2a":tile===2?"#284d59":((x+y)%2?"#385b3b":"#3b603e");ctx.fillRect(px,py,TILE,TILE);
+  ctx.strokeStyle="#ffffff08";ctx.strokeRect(px,py,TILE,TILE);
+  if(tile===1){ctx.fillStyle="#172a1d";ctx.beginPath();ctx.arc(px+24,py+23,18,0,Math.PI*2);ctx.fill();ctx.fillStyle="#456c43";ctx.beginPath();ctx.arc(px+22,py+19,15,0,Math.PI*2);ctx.fill();ctx.fillStyle="#684c32";ctx.fillRect(px+20,py+30,7,16)}
+  if(tile===2){ctx.fillStyle="#4e8990";ctx.fillRect(px+5,py+8,35,3)}
+ }
+ ctx.fillStyle="#796344";ctx.fillRect(5*TILE,9*TILE,17*TILE,2*TILE);ctx.fillRect(16*TILE,9*TILE,3*TILE,9*TILE);
+ drawHouse(7*TILE,5*TILE,"#754b3a");drawHouse(12*TILE,5*TILE,"#66516b");drawHouse(6*TILE,13*TILE,"#80623d");
+ for(const o of world.objects)drawObject(o);
+ for(const n of npcs)drawCharacter(n.x,n.y,n.color,n.name);
+ for(const e of world.enemies)if(!e.dead)drawEnemy(e);
+ drawPlayer();
+ for(const p of world.particles){ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,4,4)}ctx.globalAlpha=1;
+ ctx.restore();
+ const g=ctx.createRadialGradient(W/2,H/2,130,W/2,H/2,560);g.addColorStop(0,"#0000");g.addColorStop(1,"#05080b88");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+}
+function drawHouse(x,y,roof){ctx.fillStyle="#b59a6e";ctx.fillRect(x,y+22,130,90);ctx.fillStyle=roof;ctx.beginPath();ctx.moveTo(x-10,y+25);ctx.lineTo(x+65,y-25);ctx.lineTo(x+140,y+25);ctx.closePath();ctx.fill();ctx.fillStyle="#34291f";ctx.fillRect(x+53,y+65,25,47);ctx.fillStyle="#d8bd7c";ctx.fillRect(x+17,y+48,23,22)}
+function drawCharacter(x,y,color,name){ctx.fillStyle="#0006";ctx.beginPath();ctx.ellipse(x+14,y+30,15,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=color;ctx.fillRect(x+5,y+6,19,24);ctx.fillStyle="#e1b99a";ctx.fillRect(x+7,y-5,15,14);ctx.fillStyle="#29232a";ctx.fillRect(x+7,y-6,15,5);ctx.font="11px Inter";ctx.textAlign="center";ctx.fillStyle="#fff1d1";ctx.fillText(name,x+14,y-12)}
+function drawPlayer(){const x=player.x,y=player.y;ctx.fillStyle="#0007";ctx.beginPath();ctx.ellipse(x+13,y+31,15,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=player.invulnerable>0?"#fff":"#527fbd";ctx.fillRect(x+4,y+7,19,24);ctx.fillStyle="#e7bd9a";ctx.fillRect(x+6,y-5,16,15);ctx.fillStyle="#3a2a25";ctx.fillRect(x+5,y-7,18,6);ctx.fillStyle="#d9dce2";if(player.facing==="right")ctx.fillRect(x+22,y+14,15,3);else if(player.facing==="left")ctx.fillRect(x-10,y+14,15,3);else if(player.facing==="up")ctx.fillRect(x+12,y-12,3,14);else ctx.fillRect(x+12,y+27,3,14)}
+function drawEnemy(e){const x=e.x,y=e.y;ctx.fillStyle="#0007";ctx.beginPath();ctx.ellipse(x+e.w/2,y+e.h-2,e.w*.48,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=e.color;ctx.beginPath();ctx.arc(x+e.w/2,y+e.h/2,e.w/2,0,Math.PI*2);ctx.fill();ctx.fillStyle="#211b20";ctx.fillRect(x+e.w*.28,y+e.h*.38,4,4);ctx.fillRect(x+e.w*.62,y+e.h*.38,4,4);if(e.hp<e.maxHp){ctx.fillStyle="#281b1b";ctx.fillRect(x,y-8,e.w,4);ctx.fillStyle="#e45b5b";ctx.fillRect(x,y-8,e.w*(e.hp/e.maxHp),4)}}
+function drawObject(o){if(o.type==="herb"&&o.active){ctx.fillStyle="#b7e7a2";ctx.beginPath();ctx.arc(o.x+10,o.y+10,8,0,Math.PI*2);ctx.fill();ctx.fillStyle="#6d9c5d";ctx.fillRect(o.x+9,o.y+10,3,13)}else if(o.type==="chest"){ctx.fillStyle=o.active?"#95602e":"#493b2c";ctx.fillRect(o.x,o.y+8,o.w,o.h-8);ctx.fillStyle="#d6ad55";ctx.fillRect(o.x,o.y+13,o.w,4)}else if(o.type==="portal"){ctx.strokeStyle=player.flags.gateOpen?"#75b7e8":"#655b4a";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(o.x+21,o.y+21,17,21,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#7ebce055";ctx.fill()}else if(o.type==="sign"){ctx.fillStyle="#775132";ctx.fillRect(o.x+12,o.y,5,28);ctx.fillStyle="#c4a06a";ctx.fillRect(o.x,o.y,30,15)}}
+function loop(t){if(!gameStarted)return;const dt=Math.min((t-lastTime)/1000||0,.04);lastTime=t;update(dt);draw();requestAnimationFrame(loop)}
+function updateUI(){
+ document.getElementById("heroName").textContent=player.name+" · Nv. "+player.level;
+ document.getElementById("hpText").textContent=player.hp+" / "+player.maxHp;document.getElementById("hpBar").style.width=100*player.hp/player.maxHp+"%";
+ document.getElementById("mpText").textContent=player.mp+" / "+player.maxMp;document.getElementById("mpBar").style.width=100*player.mp/player.maxMp+"%";
+ document.getElementById("xpText").textContent=player.xp+" / "+player.nextXp;document.getElementById("xpBar").style.width=100*player.xp/player.nextXp+"%";
+ document.getElementById("attackText").textContent=player.baseAttack;document.getElementById("coins").textContent="◈ "+player.gold+" ouro";
+ let q="Fale com o ancião Oren na vila para descobrir o que está acontecendo.";
+ if(player.quests.elder&&!player.flags.elderReward)q=`<strong>Ecos na Estrada</strong><br>Núcleos de gosma: ${player.quests.slimes}/3<br>Ervas-lua: ${player.quests.herbs}/2<br><span style="color:#9299a6">Derrote gosmas e colete as plantas brilhantes.</span>`;
+ if(player.flags.elderReward&&!player.flags.gateOpen)q="<strong>A chave da cripta</strong><br>Converse com o guarda Bren para abrir a passagem.";
+ if(player.flags.gateOpen&&!player.flags.cryptBoss)q="<strong>O Primeiro Selo</strong><br>Entre na cripta e derrote o Cavaleiro sem Rosto.";
+ if(player.flags.cryptBoss)q="<strong>O despertar</strong><br>O primeiro selo foi quebrado. A moeda se partiu. Algo despertou além das montanhas.<br><span style='color:#e5bd72'>Capítulo II — em breve.</span>";
+ document.getElementById("questText").innerHTML=q;
+}
+function saveGame(){
+ const data={player,chapter:world.chapter,day:world.day,currentZone,herbs:world.objects.filter(o=>o.type==="herb").map(o=>o.active),chest:world.objects.find(o=>o.type==="chest")?.active};
+ localStorage.setItem("drakmorSave",JSON.stringify(data));toast("Jornada salva neste navegador.");log("Progresso salvo.","good");
+}
+function continueGame(){
+ const raw=localStorage.getItem("drakmorSave");if(!raw){toast("Nenhum jogo salvo encontrado.");return}
+ try{const d=JSON.parse(raw);Object.assign(player,d.player);world.chapter=d.chapter||1;world.day=d.day||1;currentZone=d.currentZone||"village";makeMap();if(d.herbs)world.objects.filter(o=>o.type==="herb").forEach((o,i)=>o.active=d.herbs[i]);const chest=world.objects.find(o=>o.type==="chest");if(chest&&d.chest!==undefined)chest.active=d.chest;spawnInitialEnemies();if(currentZone==="crypt"){world.name="Cripta do Primeiro Rei";world.enemies=[];for(let i=0;i<4;i++)spawnEnemy("skeleton",rand(9,24)*TILE,rand(7,17)*TILE);if(!player.flags.cryptBoss)spawnEnemy("boss",24*TILE,17*TILE)}gameStarted=true;document.getElementById("overlay").style.display="none";document.getElementById("location").textContent=world.name.toUpperCase();log("Jornada carregada.","good");updateUI();requestAnimationFrame(loop)}catch(e){toast("O arquivo de salvamento está corrompido.")}}
+function keyDown(e){const k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=true;if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();if(e.repeat)return;if(k===" " )attack();if(k==="q")castSpell();if(k==="e")interact();if(k==="i")openInventory();if(k==="Escape"&&document.getElementById("overlay").style.display==="flex")closeModal()}
+function keyUp(e){const k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=false}
+window.addEventListener("keydown",keyDown);window.addEventListener("keyup",keyUp);
+makeMap();updateUI();
