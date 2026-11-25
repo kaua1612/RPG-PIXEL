@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+html_code = '''<!DOCTYPE html>
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WUTHERING TIDES: Solis Archipelago 3D — Fantasy RPG</title>
+    <title>WUTHERING TIDES: Solis Archipelago 3D — Action RPG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -22,7 +22,7 @@
             --gold: #e6c675;
             --gold-bright: #fff0b3;
             --cyan: #38bdf8;
-            --bg-glass: rgba(10, 15, 28, 0.78);
+            --bg-glass: rgba(10, 15, 28, 0.82);
             --border-glass: rgba(230, 198, 117, 0.28);
         }
 
@@ -56,7 +56,7 @@
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
             border: 1px solid var(--border-glass);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
 
         .bar-smooth { transition: width 0.14s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -81,13 +81,7 @@
             0% { transform: scale(1.25); opacity: 1; }
             100% { transform: scale(1); opacity: 0; }
         }
-        .parry-banner { animation: flashAlert 0.65s ease-out forwards; }
-
-        @keyframes pulseSlow {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-        .pulse-glow { animation: pulseSlow 2s infinite; }
+        .parry-banner { animation: flashAlert 0.7s ease-out forwards; }
 
         #slowmo-vignette {
             position: fixed;
@@ -110,8 +104,8 @@
         }
 
         .swatch-btn {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             border-radius: 9999px;
             border: 2px solid rgba(255,255,255,0.2);
             transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
@@ -120,7 +114,7 @@
         .swatch-btn:hover { transform: scale(1.15); }
         .swatch-btn.active {
             border-color: #facc15;
-            box-shadow: 0 0 10px rgba(250, 204, 21, 0.7);
+            box-shadow: 0 0 10px rgba(250, 204, 21, 0.75);
             transform: scale(1.18);
         }
 
@@ -138,10 +132,9 @@
             box-shadow: 0 0 18px rgba(230, 198, 117, 0.25);
         }
 
-        /* Custom Scrollbar for Creator Panel */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
-        ::-webkit-scrollbar-thumb { background: rgba(230, 198, 117, 0.4); border-radius: 999px; }
+        ::-webkit-scrollbar-thumb { background: rgba(230, 198, 117, 0.45); border-radius: 999px; }
 
         @media (max-width: 768px) {
             .desktop-only { display: none !important; }
@@ -157,88 +150,103 @@
     <div id="enemy-bars-layer" class="fixed inset-0 pointer-events-none z-20 overflow-hidden"></div>
 
     <!-- =========================================================
-         ETAPA 1 & 2: CRIAÇÃO DE PERSONAGEM, CLASSES & ATRIBUTOS
+         TELA INICIAL: CRIAÇÃO DE RESONATOR ANIME (HOMEM / MULHER)
     ========================================================= -->
-    <div id="start-screen" class="fixed inset-0 z-50 flex flex-col lg:flex-row justify-between p-4 sm:p-6 bg-gradient-to-r from-[#060a14]/90 via-[#060a14]/35 to-[#060a14]/90 backdrop-blur-[2px] overflow-y-auto">
+    <div id="start-screen" class="fixed inset-0 z-50 flex flex-col lg:flex-row justify-between p-4 sm:p-5 bg-gradient-to-r from-[#060a14]/92 via-[#060a14]/30 to-[#060a14]/92 backdrop-blur-[2px] overflow-y-auto">
         
-        <!-- PAINEL ESQUERDO: IDENTIDADE & CUSTOMIZAÇÃO VISUAL -->
-        <div class="glass-panel rounded-2xl p-5 w-full lg:w-[370px] flex flex-col justify-between gap-4 border-amber-300/30 z-10 max-h-full overflow-y-auto">
+        <!-- PAINEL ESQUERDO: GÊNERO, CABELO ANIME & TRAJE -->
+        <div class="glass-panel rounded-2xl p-4 sm:p-5 w-full lg:w-[375px] flex flex-col justify-between gap-3 border-amber-300/30 z-10 max-h-full overflow-y-auto">
             <div>
-                <div class="flex items-center gap-2 text-amber-300/90 text-[10px] tracking-[0.28em] uppercase font-bold mb-1">
-                    <i class="fa-solid fa-sparkles"></i> Solis Archipelago • RPG 3D
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-amber-300/90 text-[10px] tracking-[0.26em] uppercase font-bold">
+                        <i class="fa-solid fa-sparkles"></i> Solis Archipelago • Resonator
+                    </span>
+                    <button type="button" onclick="toggleSettingsModal(true)" class="px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-amber-300 text-[11px] font-bold border border-amber-400/30 transition cursor-pointer">
+                        <i class="fa-solid fa-gear mr-1"></i> Config.
+                    </button>
                 </div>
-                <h1 class="font-cinzel text-2xl sm:text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-amber-300 to-amber-600">
-                    FORJAR HERÓI
+                <h1 class="font-cinzel text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-amber-300 to-amber-600">
+                    DESPERTAR RESONATOR
                 </h1>
-                <p class="text-slate-400 text-xs mt-1">Personalize a sua aparência e escolha o seu destino antes de entrar no mundo aberto.</p>
+
+                <!-- Escolha de Gênero (Homem / Mulher) -->
+                <div class="mt-3">
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-amber-200/80 mb-1.5">Tipo de Corpo / Gênero</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="setGender('male')" id="gender-male" class="py-2 px-3 rounded-xl text-xs font-extrabold border border-amber-400 bg-amber-500/25 text-amber-200 flex items-center justify-center gap-2 transition cursor-pointer">
+                            <i class="fa-solid fa-mars text-sky-400"></i> Homem (Alquimista)
+                        </button>
+                        <button type="button" onclick="setGender('female')" id="gender-female" class="py-2 px-3 rounded-xl text-xs font-extrabold border border-slate-700 bg-slate-900/75 text-slate-300 flex items-center justify-center gap-2 transition cursor-pointer">
+                            <i class="fa-solid fa-venus text-rose-400"></i> Mulher (Valquíria)
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Nome do Personagem -->
-                <div class="mt-4">
-                    <label class="block text-[11px] font-bold uppercase tracking-wider text-amber-200/80 mb-1.5">Nome do Aventureiro</label>
-                    <input id="char-name-input" type="text" maxlength="18" value="Aetheris" placeholder="Digite o nome..."
-                        class="w-full px-3.5 py-2 rounded-xl bg-slate-950/80 border border-amber-400/30 text-amber-100 font-bold text-sm focus:outline-none focus:border-amber-400 transition">
+                <div class="mt-3">
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">Nome do Protagonista</label>
+                    <input id="char-name-input" type="text" maxlength="18" value="Kaelen" placeholder="Digite o nome..."
+                        class="w-full px-3.5 py-2 rounded-xl bg-slate-950/85 border border-amber-400/30 text-amber-100 font-bold text-sm focus:outline-none focus:border-amber-400 transition">
                 </div>
 
-                <!-- Estilo de Cabelo -->
-                <div class="mt-4">
-                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">Estilo de Cabelo</label>
+                <!-- Estilo de Cabelo Anime -->
+                <div class="mt-3">
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">Penteado Anime</label>
                     <div class="grid grid-cols-3 gap-2">
-                        <button type="button" onclick="setHairStyle('long')" id="hair-style-long" class="hair-style-btn py-1.5 px-2 rounded-lg text-xs font-bold border border-amber-400 bg-amber-500/20 text-amber-200">Longo Fluido</button>
-                        <button type="button" onclick="setHairStyle('ponytail')" id="hair-style-ponytail" class="hair-style-btn py-1.5 px-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-900/70 text-slate-300">Rabo de Cavalo</button>
-                        <button type="button" onclick="setHairStyle('short')" id="hair-style-short" class="hair-style-btn py-1.5 px-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-900/70 text-slate-300">Curto Élfico</button>
+                        <button type="button" onclick="setHairStyle('layered')" id="hair-style-layered" class="hair-style-btn py-1.5 px-2 rounded-lg text-xs font-bold border border-amber-400 bg-amber-500/20 text-amber-200 cursor-pointer">Mechas Soltas</button>
+                        <button type="button" onclick="setHairStyle('ponytail')" id="hair-style-ponytail" class="hair-style-btn py-1.5 px-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-900/70 text-slate-300 cursor-pointer">Coque / Cauda</button>
+                        <button type="button" onclick="setHairStyle('long')" id="hair-style-long" class="hair-style-btn py-1.5 px-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-900/70 text-slate-300 cursor-pointer">Longo Imperial</button>
                     </div>
                 </div>
 
-                <!-- Cor do Cabelo -->
-                <div class="mt-3.5">
-                    <div class="flex justify-between items-center mb-1.5">
-                        <label class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Cor do Cabelo</label>
-                        <span id="lbl-hair-color" class="text-[10px] text-amber-300 font-semibold">Platina Estelar</span>
+                <!-- Cores -->
+                <div class="mt-3 space-y-2.5">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Cor do Cabelo</label>
+                            <span id="lbl-hair-color" class="text-[10px] text-amber-300 font-semibold">Platina Cinza</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5" id="hair-swatches"></div>
                     </div>
-                    <div class="flex flex-wrap gap-2" id="hair-swatches"></div>
-                </div>
 
-                <!-- Cor dos Olhos -->
-                <div class="mt-3.5">
-                    <div class="flex justify-between items-center mb-1.5">
-                        <label class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Cor dos Olhos</label>
-                        <span id="lbl-eye-color" class="text-[10px] text-sky-300 font-semibold">Safira Solar</span>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Cor dos Olhos</label>
+                            <span id="lbl-eye-color" class="text-[10px] text-sky-300 font-semibold">Ciano Astral</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5" id="eye-swatches"></div>
                     </div>
-                    <div class="flex flex-wrap gap-2" id="eye-swatches"></div>
-                </div>
 
-                <!-- Tom de Pele -->
-                <div class="mt-3.5">
-                    <div class="flex justify-between items-center mb-1.5">
-                        <label class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Tom de Pele</label>
-                        <span id="lbl-skin-color" class="text-[10px] text-amber-200 font-semibold">Porcelana</span>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Tom de Pele</label>
+                            <span id="lbl-skin-color" class="text-[10px] text-amber-200 font-semibold">Porcelana</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5" id="skin-swatches"></div>
                     </div>
-                    <div class="flex flex-wrap gap-2" id="skin-swatches"></div>
-                </div>
 
-                <!-- Cor do Traje / Armadura -->
-                <div class="mt-3.5">
-                    <div class="flex justify-between items-center mb-1.5">
-                        <label class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Cor do Traje & Capa</label>
-                        <span id="lbl-outfit-color" class="text-[10px] text-indigo-300 font-semibold">Azul Astral</span>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Sobretudo & Armadura</label>
+                            <span id="lbl-outfit-color" class="text-[10px] text-indigo-300 font-semibold">Azul Real & Branco</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5" id="outfit-swatches"></div>
                     </div>
-                    <div class="flex flex-wrap gap-2" id="outfit-swatches"></div>
                 </div>
             </div>
 
-            <!-- Rodapé do Painel Esquerdo: Dica de Rotação 3D + Save existente -->
-            <div class="pt-3 border-t border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400">
-                <span><i class="fa-solid fa-arrows-rotate text-amber-400 mr-1"></i> Arraste no centro para girar o modelo 3D</span>
-                <button type="button" onclick="randomizeAppearance()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold border border-amber-400/20 transition">
+            <div class="pt-2.5 border-t border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400">
+                <span><i class="fa-solid fa-arrows-rotate text-amber-400 mr-1"></i> Arraste no centro p/ girar</span>
+                <button type="button" onclick="randomizeAppearance()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold border border-amber-400/20 transition cursor-pointer">
                     <i class="fa-solid fa-dice"></i> Aleatório
                 </button>
             </div>
         </div>
 
-        <!-- CENTRO: ÁREA TRANSPARENTE PARA VISUALIZAR O MODELO 3D EM TEMPO REAL -->
+        <!-- CENTRO: PREVIEW 3D INTERATIVO -->
         <div id="preview-drag-zone" class="flex-1 min-h-[240px] flex flex-col items-center justify-between py-2 cursor-grab active:cursor-grabbing">
             <div class="glass-panel px-4 py-1.5 rounded-full text-[11px] font-bold tracking-widest uppercase text-amber-200/90 border-amber-300/30">
-                Pré-visualização em Tempo Real • <span id="preview-class-badge" class="text-amber-400">Guerreiro</span>
+                Estúdio 3D • <span id="preview-class-badge" class="text-amber-400">Guerreiro</span> (<span id="preview-element-badge" class="text-sky-300">Aero</span>)
             </div>
 
             <div class="flex flex-col items-center gap-2 mb-1">
@@ -247,7 +255,7 @@
                 </div>
                 <div class="flex gap-3">
                     <button id="btn-start-game" class="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-extrabold text-sm tracking-widest uppercase shadow-[0_0_30px_rgba(245,158,11,0.55)] hover:scale-105 active:scale-95 transition-all cursor-pointer">
-                        <i class="fa-solid fa-compass mr-2"></i> Entrar no Mundo
+                        <i class="fa-solid fa-compass mr-2"></i> Explorar Mundo Aberto
                     </button>
                     <button id="btn-load-save" class="hidden px-5 py-3.5 rounded-full glass-panel border-emerald-400/50 text-emerald-300 font-extrabold text-xs tracking-wider uppercase hover:bg-emerald-500/20 transition-all cursor-pointer">
                         <i class="fa-solid fa-play mr-1.5"></i> Continuar
@@ -256,59 +264,54 @@
             </div>
         </div>
 
-        <!-- PAINEL DIREITO: ESCOLHA DAS 8 CLASSES & ATRIBUTOS BASE -->
-        <div class="glass-panel rounded-2xl p-5 w-full lg:w-[400px] flex flex-col justify-between gap-3 border-amber-300/30 z-10 max-h-full overflow-y-auto">
+        <!-- PAINEL DIREITO: CLASSES, ELEMENTO & EQUIPE INICIAL -->
+        <div class="glass-panel rounded-2xl p-4 sm:p-5 w-full lg:w-[400px] flex flex-col justify-between gap-3 border-amber-300/30 z-10 max-h-full overflow-y-auto">
             <div>
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-300"><i class="fa-solid fa-shield-halved mr-1"></i> Escolha a sua Classe (8)</span>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-300"><i class="fa-solid fa-shield-halved mr-1"></i> Especialização Inicial (8)</span>
                     <span id="class-weapon-tag" class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-200 font-bold border border-amber-400/30">Espada</span>
                 </div>
 
-                <!-- Grid das 8 Classes -->
                 <div id="classes-grid" class="grid grid-cols-2 gap-2"></div>
 
-                <!-- Descrição da Classe Selecionada -->
                 <div class="mt-3 p-3 rounded-xl bg-slate-950/75 border border-slate-700/70">
                     <div class="flex items-center justify-between">
                         <h3 id="sel-class-name" class="font-cinzel font-bold text-base text-amber-300">Guerreiro</h3>
-                        <span id="sel-class-role" class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">Vanguarda / Corpo-a-Corpo</span>
+                        <span id="sel-class-role" class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-sky-300 font-bold">Elemento: Aero</span>
                     </div>
-                    <p id="sel-class-desc" class="text-xs text-slate-300 mt-1 leading-relaxed">
-                        Mestre da lâmina pesada com elevada resistência física, contra-ataques devastadores e postura inabalável.
-                    </p>
-                    <div class="mt-2 pt-2 border-t border-slate-800 flex items-center gap-2 text-[11px] text-amber-200">
-                        <i class="fa-solid fa-bolt text-amber-400"></i>
-                        <span>Habilidade Passiva: <strong id="sel-class-passive">+20% Dano de Parry & Postura</strong></span>
+                    <p id="sel-class-desc" class="text-xs text-slate-300 mt-1 leading-relaxed"></p>
+                    <div class="mt-2 pt-2 border-t border-slate-800 text-[11px] text-amber-200 space-y-1">
+                        <div><i class="fa-solid fa-bolt text-amber-400 mr-1"></i> Forte Circuit: <strong id="sel-class-passive"></strong></div>
+                        <div><i class="fa-solid fa-users text-sky-400 mr-1"></i> Equipe Inicial: <strong>Você + Lyra (Glacio) + Vesper (Fusion)</strong></div>
                     </div>
                 </div>
 
-                <!-- Atributos Iniciais da Classe -->
                 <div class="mt-3">
-                    <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">Atributos Base de Combate</span>
+                    <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">Atributos Base do Resonator</span>
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <div class="px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/60 flex justify-between">
                             <span class="text-emerald-400 font-bold"><i class="fa-solid fa-heart mr-1"></i> Vida</span>
-                            <span id="stat-preview-hp" class="font-mono font-bold text-white">1200</span>
+                            <span id="stat-preview-hp" class="font-mono font-bold text-white">1350</span>
                         </div>
                         <div class="px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/60 flex justify-between">
-                            <span class="text-sky-400 font-bold"><i class="fa-solid fa-droplet mr-1"></i> Mana</span>
+                            <span class="text-sky-400 font-bold"><i class="fa-solid fa-droplet mr-1"></i> Energia</span>
                             <span id="stat-preview-mp" class="font-mono font-bold text-white">100</span>
                         </div>
                         <div class="px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/60 flex justify-between">
-                            <span class="text-rose-400 font-bold"><i class="fa-solid fa-hand-fist mr-1"></i> Força</span>
-                            <span id="stat-preview-str" class="font-mono font-bold text-white">16</span>
+                            <span class="text-rose-400 font-bold"><i class="fa-solid fa-hand-fist mr-1"></i> Ataque</span>
+                            <span id="stat-preview-str" class="font-mono font-bold text-white">17</span>
                         </div>
                         <div class="px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/60 flex justify-between">
                             <span class="text-amber-400 font-bold"><i class="fa-solid fa-shield mr-1"></i> Defesa</span>
-                            <span id="stat-preview-def" class="font-mono font-bold text-white">15</span>
+                            <span id="stat-preview-def" class="font-mono font-bold text-white">16</span>
                         </div>
                         <div class="px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/60 flex justify-between">
-                            <span class="text-purple-400 font-bold"><i class="fa-solid fa-hat-wizard mr-1"></i> Inteligência</span>
-                            <span id="stat-preview-int" class="font-mono font-bold text-white">8</span>
+                            <span class="text-purple-400 font-bold"><i class="fa-solid fa-hat-wizard mr-1"></i> Ressonância</span>
+                            <span id="stat-preview-int" class="font-mono font-bold text-white">10</span>
                         </div>
                         <div class="px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700/60 flex justify-between">
                             <span class="text-teal-400 font-bold"><i class="fa-solid fa-wind mr-1"></i> Agilidade</span>
-                            <span id="stat-preview-agi" class="font-mono font-bold text-white">11</span>
+                            <span id="stat-preview-agi" class="font-mono font-bold text-white">12</span>
                         </div>
                     </div>
                 </div>
@@ -321,30 +324,27 @@
     ========================================================= -->
     <div id="game-hud" class="hidden fixed inset-0 pointer-events-none z-30">
         
-        <!-- TOP-LEFT: MINIMAPA RADAR + STATUS + UID + BOTÃO FICHA (C) -->
+        <!-- TOP-LEFT: MINIMAPA RADAR + REGIÃO ATUAL + BOTÕES DE MENU -->
         <div class="fixed top-4 left-4 flex items-start gap-3 pointer-events-auto">
-            <div class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full glass-panel p-1.5 flex items-center justify-center shadow-2xl">
+            <div onclick="toggleWorldMap()" title="Abrir Mapa Mundial [M]" class="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full glass-panel p-1.5 flex items-center justify-center shadow-2xl cursor-pointer group">
                 <canvas id="minimap-canvas" width="120" height="120" class="w-full h-full rounded-full"></canvas>
-                <div class="absolute -bottom-2 px-2 py-0.5 rounded-full bg-slate-900 border border-amber-400/40 text-[9px] font-bold tracking-wider text-amber-300 uppercase">
-                    Solis North
+                <div id="hud-region-badge" class="absolute -bottom-2 px-2.5 py-0.5 rounded-full bg-slate-900 border border-amber-400/50 text-[9px] font-bold tracking-wider text-amber-300 uppercase whitespace-nowrap group-hover:bg-amber-500 group-hover:text-slate-950 transition">
+                    Porto de Solis [M]
                 </div>
             </div>
 
             <div class="flex flex-col gap-1.5 pt-1">
                 <div class="glass-panel px-3 py-1.5 rounded-xl flex items-center gap-2 flex-wrap">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span id="hud-char-name" class="text-xs font-extrabold tracking-wide text-amber-200">Aetheris</span>
-                    <span id="hud-class-name" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-400/30">Guerreiro</span>
+                    <span id="hud-safezone-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span id="hud-char-name" class="text-xs font-extrabold tracking-wide text-amber-200">Kaelen</span>
+                    <span id="hud-element-pill" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-400/30">Aero</span>
                     <span id="hud-level-badge" class="text-[10px] font-bold text-slate-300">Nív. 1</span>
-                    <button id="btn-toggle-stats" onclick="toggleCharacterSheet()" class="ml-1 px-2 py-0.5 rounded bg-amber-400/20 hover:bg-amber-400/35 border border-amber-300/40 text-[10px] font-bold text-amber-200 transition cursor-pointer">
-                        <i class="fa-solid fa-user-shield mr-1"></i>Ficha [C] <span id="hud-attr-points-dot" class="hidden inline-block w-2 h-2 rounded-full bg-rose-500 ml-0.5 animate-ping"></span>
-                    </button>
                 </div>
 
                 <!-- Barra de XP -->
-                <div class="glass-panel px-3 py-1.5 rounded-xl w-52 sm:w-60">
+                <div class="glass-panel px-3 py-1.5 rounded-xl w-56 sm:w-64">
                     <div class="flex justify-between text-[10px] font-bold text-slate-300 mb-1">
-                        <span>EXP</span>
+                        <span id="hud-zone-status" class="text-emerald-300"><i class="fa-solid fa-shield-heart mr-1"></i>Zona Segura (Cidade)</span>
                         <span id="xp-text" class="font-mono text-amber-300">0 / 100</span>
                     </div>
                     <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
@@ -352,12 +352,14 @@
                     </div>
                 </div>
 
-                <!-- Notificações Co-op / Progresso -->
-                <div class="flex items-center gap-2">
-                    <div id="coop-badge" class="glass-panel px-3 py-1 rounded-lg text-[10px] text-sky-300 font-semibold flex items-center gap-1.5">
-                        <i class="fa-solid fa-users"></i>
-                        <span id="coop-status">Solo (Abra 2ª aba p/ Co-op)</span>
-                    </div>
+                <!-- Atalhos Rápidos: Mapa [M], Ficha [C], Salvar -->
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <button onclick="toggleWorldMap()" class="glass-panel px-2.5 py-1 rounded-lg text-[10px] text-amber-200 hover:bg-amber-500/20 font-bold transition cursor-pointer">
+                        <i class="fa-solid fa-map-location-dot text-amber-400 mr-1"></i>Mapa [M]
+                    </button>
+                    <button onclick="toggleCharacterSheet()" class="glass-panel px-2.5 py-1 rounded-lg text-[10px] text-sky-200 hover:bg-sky-500/20 font-bold transition cursor-pointer">
+                        <i class="fa-solid fa-user-shield text-sky-400 mr-1"></i>Ficha [C] <span id="hud-attr-points-dot" class="hidden inline-block w-2 h-2 rounded-full bg-rose-500 ml-0.5 animate-ping"></span>
+                    </button>
                     <button onclick="saveGameProgress(true)" title="Salvar Progresso" class="glass-panel px-2.5 py-1 rounded-lg text-[10px] text-emerald-300 hover:bg-emerald-500/20 font-bold transition cursor-pointer">
                         <i class="fa-solid fa-floppy-disk"></i>
                     </button>
@@ -365,14 +367,14 @@
             </div>
         </div>
 
-        <!-- TOP-CENTER: BARRA DE CHEFE MUNDIAL / INIMIGO EM FOCO -->
+        <!-- TOP-CENTER: BARRA DE CHEFE MUNDIAL -->
         <div id="boss-hud" class="hidden fixed top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md glass-panel px-4 py-2.5 rounded-2xl border-rose-500/40">
             <div class="flex justify-between items-center mb-1">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-skull text-rose-400 text-xs"></i>
                     <span id="boss-name" class="font-cinzel font-bold text-xs sm:text-sm tracking-wider text-rose-100">TEMPEST MEPHIS</span>
                 </div>
-                <span id="boss-lvl" class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-950/80 text-rose-300 border border-rose-500/30">Nív. 50</span>
+                <span id="boss-lvl" class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-950/80 text-rose-300 border border-rose-500/30">Nív. 40</span>
             </div>
             <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden p-[1px] border border-rose-500/30">
                 <div id="boss-hp-bar" class="h-full bg-gradient-to-r from-rose-700 via-red-500 to-orange-400 rounded-full bar-smooth" style="width: 100%;"></div>
@@ -382,11 +384,14 @@
             </div>
         </div>
 
-        <!-- TOP-RIGHT: MENU & CONTROLES -->
+        <!-- TOP-RIGHT: EQUIPE DE 3 RESONATORS (TROCA INSTANTÂNEA + INTRO/OUTRO) & CONFIGURAÇÕES -->
         <div class="fixed top-4 right-4 flex flex-col items-end gap-2 pointer-events-auto">
             <div class="flex gap-2">
-                <button id="btn-audio" class="glass-panel w-9 h-9 rounded-xl flex items-center justify-center text-amber-300 hover:bg-amber-400/20 transition cursor-pointer" title="Som">
+                <button id="btn-audio" class="glass-panel w-9 h-9 rounded-xl flex items-center justify-center text-amber-300 hover:bg-amber-400/20 transition cursor-pointer" title="Áudio">
                     <i id="icon-audio" class="fa-solid fa-volume-high text-xs"></i>
+                </button>
+                <button onclick="toggleSettingsModal(true)" class="glass-panel w-9 h-9 rounded-xl flex items-center justify-center text-slate-200 hover:bg-amber-400/20 hover:text-amber-300 transition cursor-pointer" title="Configurações Gráficas & Controles [ESC]">
+                    <i class="fa-solid fa-gear text-xs"></i>
                 </button>
                 <button id="btn-lock-mouse" class="glass-panel px-3 h-9 rounded-xl flex items-center gap-2 text-xs font-bold text-sky-300 hover:bg-sky-400/20 transition cursor-pointer">
                     <i class="fa-solid fa-computer-mouse"></i>
@@ -394,22 +399,25 @@
                 </button>
             </div>
 
-            <div class="desktop-only glass-panel p-3 rounded-2xl text-[11px] text-slate-300 space-y-1 w-56">
-                <div class="text-amber-300 font-bold uppercase tracking-wider text-[10px] mb-1 border-b border-slate-700/70 pb-1">Comandos</div>
-                <div class="flex justify-between"><span>Mover / Correr</span><span class="text-white font-bold">WASD + Shift</span></div>
-                <div class="flex justify-between"><span>Pular / Planar</span><span class="text-white font-bold">Espaço (2x)</span></div>
-                <div class="flex justify-between"><span>Esquiva Perfeita</span><span class="text-sky-300 font-bold">Ctrl / Botão Dir.</span></div>
-                <div class="flex justify-between"><span>Ataque / Parry</span><span class="text-amber-300 font-bold">Clique Esq.</span></div>
-                <div class="flex justify-between"><span>Mira Precisa TPS</span><span class="text-rose-300 font-bold">V / Segurar Dir.</span></div>
-                <div class="flex justify-between"><span>Habilidade / Supremo</span><span class="text-purple-300 font-bold">E / R</span></div>
-                <div class="flex justify-between"><span>Ficha de Atributos</span><span class="text-emerald-300 font-bold">C</span></div>
-                <div class="flex justify-between"><span>Trocar Arma</span><span class="text-emerald-300 font-bold">1 - 4</span></div>
+            <!-- PAINEL DA EQUIPE DE 3 RESONATORS (WUTHERING WAVES TEAM SYSTEM) -->
+            <div id="team-panel" class="glass-panel p-2.5 rounded-2xl w-60 space-y-1.5 border-amber-400/30">
+                <div class="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-amber-300 px-1">
+                    <span>Equipe Resonator</span>
+                    <span class="text-slate-400">[F1 - F3]</span>
+                </div>
+                <div id="team-slots-container" class="space-y-1.5"></div>
+            </div>
+
+            <!-- Comandos Compactos -->
+            <div class="desktop-only glass-panel p-2.5 rounded-2xl text-[10px] text-slate-300 space-y-1 w-60">
+                <div class="flex justify-between"><span>Mover / Planar</span><span class="text-white font-bold">WASD / Espaço (2x)</span></div>
+                <div class="flex justify-between"><span>Esquiva / Parry</span><span class="text-sky-300 font-bold">Ctrl / Clique Esq.</span></div>
+                <div class="flex justify-between"><span>Mira TPS / Supremo</span><span class="text-amber-300 font-bold">V (Dir.) / E / R</span></div>
+                <div class="flex justify-between"><span>Mapa (10 Cidades) / Ficha</span><span class="text-emerald-300 font-bold">M / C</span></div>
             </div>
         </div>
 
-        <!-- =========================================================
-             MIRA TPS DINÂMICA (TELA CHEIA)
-        ========================================================= -->
+        <!-- MIRA TPS DINÂMICA -->
         <div id="reticle-container" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center transition-all duration-200">
             <svg id="reticle-base" class="w-10 h-10 transition-all duration-200" viewBox="0 0 40 40">
                 <circle cx="20" cy="20" r="2.2" fill="#e6c675" opacity="0.9"/>
@@ -432,22 +440,20 @@
             </div>
         </div>
 
-        <!-- ALERTA DE PARRY / ESQUIVA PERFEITA / LEVEL UP -->
+        <!-- ALERTA DE PARRY / INTRO SKILL / REAÇÃO ELEMENTAL -->
         <div id="combat-alert-box" class="fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none"></div>
 
-        <!-- =========================================================
-             BOTTOM-CENTER: VIDA, MANA, CIRCUITO FORTE, STAMINA E HABILIDADES
-        ========================================================= -->
+        <!-- BOTTOM-CENTER: FORTE CIRCUIT, VIDA, ENERGIA, STAMINA E HABILIDADES -->
         <div class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[94%] max-w-xl flex flex-col items-center gap-2 pointer-events-auto">
             
             <div id="glider-badge" class="hidden px-3 py-1 rounded-full glass-panel border-sky-400/50 text-sky-300 text-[11px] font-bold tracking-wider uppercase">
                 <i class="fa-solid fa-feather-pointed mr-1.5"></i> Planador Ativo
             </div>
 
-            <!-- Barra de Circuito Forte -->
-            <div class="w-64 sm:w-72 flex flex-col items-center">
+            <!-- Barra de Forte Circuit + Concerto Energy -->
+            <div class="w-72 sm:w-80 flex flex-col items-center">
                 <div class="flex justify-between w-full text-[10px] font-bold uppercase tracking-widest mb-0.5 px-1">
-                    <span class="text-amber-300">Circuito Forte</span>
+                    <span class="text-amber-300">Forte Circuit</span>
                     <span id="forte-pct" class="text-amber-100 font-mono">0%</span>
                 </div>
                 <div class="w-full h-2 bg-slate-950/90 rounded-full border border-amber-400/40 p-[1px] overflow-hidden shadow-[0_0_12px_rgba(230,198,117,0.3)]">
@@ -455,169 +461,266 @@
                 </div>
             </div>
 
-            <!-- Barra de Vida + Mana + Stamina -->
+            <!-- Barra de Vida + Energia + Stamina -->
             <div class="w-full glass-panel px-4 py-2.5 rounded-2xl flex flex-col gap-1.5">
                 <div class="flex justify-between items-center text-xs font-bold">
                     <div class="flex items-center gap-2">
                         <span class="text-emerald-400"><i class="fa-solid fa-heart"></i></span>
-                        <span id="hp-text" class="font-mono text-white">1200 / 1200</span>
+                        <span id="hp-text" class="font-mono text-white">1350 / 1350</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-sky-400"><i class="fa-solid fa-droplet"></i></span>
+                        <span class="text-sky-400"><i class="fa-solid fa-bolt"></i></span>
                         <span id="mp-text" class="font-mono text-sky-200">100 / 100</span>
                     </div>
                     <div class="flex items-center gap-2 text-[11px] text-amber-300">
-                        <i class="fa-solid fa-bolt"></i>
+                        <i class="fa-solid fa-person-running"></i>
                         <span id="stamina-text" class="font-mono">100%</span>
                     </div>
                 </div>
                 
-                <!-- HP Bar -->
                 <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden p-[1px] border border-emerald-500/30">
                     <div id="hp-bar" class="h-full bg-gradient-to-r from-emerald-600 via-emerald-400 to-teal-300 rounded-full bar-smooth" style="width: 100%;"></div>
                 </div>
 
-                <!-- MP Bar -->
                 <div class="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-sky-500/25">
                     <div id="mp-bar" class="h-full bg-gradient-to-r from-blue-600 via-sky-400 to-cyan-300 rounded-full bar-smooth" style="width: 100%;"></div>
                 </div>
 
-                <!-- Stamina Bar -->
                 <div class="w-full h-1 bg-slate-950 rounded-full overflow-hidden">
                     <div id="stamina-bar" class="h-full bg-gradient-to-r from-amber-400 to-yellow-200 rounded-full bar-smooth" style="width: 100%;"></div>
                 </div>
             </div>
 
-            <!-- Botões de Combate & Armas -->
-            <div class="flex items-center gap-2.5 sm:gap-3 mt-0.5">
-                <button onclick="switchWeapon(0)" id="wep-0" class="glass-panel px-3 py-2 rounded-xl text-xs font-bold border-amber-400 text-amber-300 flex items-center gap-1.5 transition cursor-pointer">
+            <!-- Botões de Armas & Habilidades -->
+            <div class="flex items-center gap-2 sm:gap-2.5 mt-0.5">
+                <button onclick="switchWeapon(0)" id="wep-0" class="glass-panel px-2.5 py-2 rounded-xl text-xs font-bold border-amber-400 text-amber-300 flex items-center gap-1.5 transition cursor-pointer">
                     <i class="fa-solid fa-khanda"></i> <span class="hidden sm:inline">Espada</span> <span class="text-[10px] opacity-60">[1]</span>
                 </button>
-                <button onclick="switchWeapon(1)" id="wep-1" class="glass-panel px-3 py-2 rounded-xl text-xs font-bold text-slate-400 flex items-center gap-1.5 transition cursor-pointer">
+                <button onclick="switchWeapon(1)" id="wep-1" class="glass-panel px-2.5 py-2 rounded-xl text-xs font-bold text-slate-400 flex items-center gap-1.5 transition cursor-pointer">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hidden sm:inline">Cajado</span> <span class="text-[10px] opacity-60">[2]</span>
                 </button>
-                <button onclick="switchWeapon(2)" id="wep-2" class="glass-panel px-3 py-2 rounded-xl text-xs font-bold text-slate-400 flex items-center gap-1.5 transition cursor-pointer">
+                <button onclick="switchWeapon(2)" id="wep-2" class="glass-panel px-2.5 py-2 rounded-xl text-xs font-bold text-slate-400 flex items-center gap-1.5 transition cursor-pointer">
                     <i class="fa-solid fa-gun"></i> <span class="hidden sm:inline">Pistolas</span> <span class="text-[10px] opacity-60">[3]</span>
                 </button>
-                <button onclick="switchWeapon(3)" id="wep-3" class="glass-panel px-3 py-2 rounded-xl text-xs font-bold text-slate-400 flex items-center gap-1.5 transition cursor-pointer">
+                <button onclick="switchWeapon(3)" id="wep-3" class="glass-panel px-2.5 py-2 rounded-xl text-xs font-bold text-slate-400 flex items-center gap-1.5 transition cursor-pointer">
                     <i class="fa-solid fa-crosshairs"></i> <span class="hidden sm:inline">Arco</span> <span class="text-[10px] opacity-60">[4]</span>
                 </button>
 
                 <div class="h-6 w-[1px] bg-slate-700 mx-0.5"></div>
 
-                <!-- Habilidade Ressonância [E] -->
-                <button id="btn-skill-e" onclick="triggerSkillE()" class="relative w-11 h-11 rounded-xl glass-panel border-sky-400/50 flex flex-col items-center justify-center text-sky-300 hover:scale-105 transition cursor-pointer">
+                <!-- Habilidade de Ressonância [E] -->
+                <button id="btn-skill-e" onclick="triggerSkillE()" class="relative w-11 h-11 rounded-xl glass-panel border-sky-400/50 flex flex-col items-center justify-center text-sky-300 hover:scale-105 transition cursor-pointer" title="Habilidade de Ressonância [E]">
                     <i class="fa-solid fa-tornado text-sm"></i>
                     <span class="text-[9px] font-extrabold mt-0.5">E</span>
                     <div id="cd-skill-e" class="hidden absolute inset-0 bg-slate-950/85 rounded-xl flex items-center justify-center text-xs font-mono font-bold text-white"></div>
                 </button>
 
-                <!-- Supremo [R] -->
-                <button id="btn-skill-r" onclick="triggerSkillR()" class="relative w-12 h-12 rounded-2xl glass-panel border-amber-400 flex flex-col items-center justify-center text-amber-300 shadow-[0_0_20px_rgba(230,198,117,0.35)] hover:scale-105 transition cursor-pointer">
+                <!-- Liberação de Ressonância [R] -->
+                <button id="btn-skill-r" onclick="triggerSkillR()" class="relative w-12 h-12 rounded-2xl glass-panel border-amber-400 flex flex-col items-center justify-center text-amber-300 shadow-[0_0_20px_rgba(230,198,117,0.35)] hover:scale-105 transition cursor-pointer" title="Liberação de Ressonância [R]">
                     <i class="fa-solid fa-sun text-base"></i>
                     <span class="text-[9px] font-extrabold mt-0.5">R</span>
                     <div id="cd-skill-r" class="hidden absolute inset-0 bg-slate-950/85 rounded-2xl flex items-center justify-center text-xs font-mono font-bold text-white"></div>
                 </button>
             </div>
         </div>
+    </div>
 
-        <!-- =========================================================
-             MODAL DA FICHA DE PERSONAGEM & DISTRIBUIÇÃO DE ATRIBUTOS [C]
-        ========================================================= -->
-        <div id="char-sheet-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 pointer-events-auto">
-            <div class="glass-panel rounded-2xl p-6 w-full max-w-md border-amber-300/40 relative">
-                <button onclick="toggleCharacterSheet()" class="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center cursor-pointer">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-
-                <div class="flex items-center gap-3 border-b border-slate-700/70 pb-4">
-                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-700 flex items-center justify-center text-slate-950 text-xl font-black shadow-lg">
-                        <i id="sheet-class-icon" class="fa-solid fa-shield-halved"></i>
-                    </div>
+    <!-- =========================================================
+         MODAL DO MAPA MUNDIAL GIGANTE (10 CIDADES & TELEPORTE) [M]
+    ========================================================= -->
+    <div id="world-map-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3 sm:p-6">
+        <div class="glass-panel rounded-3xl p-4 sm:p-6 w-full max-w-5xl border-amber-300/40 flex flex-col lg:flex-row gap-4 max-h-[92vh]">
+            <!-- Canvas Interativo do Mapa Mundial -->
+            <div class="flex-1 flex flex-col">
+                <div class="flex items-center justify-between mb-2">
                     <div>
-                        <h2 id="sheet-char-name" class="font-cinzel text-xl font-black text-amber-200">Aetheris</h2>
-                        <p class="text-xs text-slate-300"><span id="sheet-class-title" class="text-amber-400 font-bold">Guerreiro</span> • Nível <span id="sheet-level" class="font-bold text-white">1</span></p>
+                        <h2 class="font-cinzel text-lg sm:text-xl font-black text-amber-200"><i class="fa-solid fa-earth-americas text-amber-400 mr-2"></i>ATLAS DE SOLIS — MUNDO ABERTO</h2>
+                        <p class="text-[11px] text-slate-400">Clique em qualquer uma das <strong class="text-amber-300">10 Cidades</strong> para viajar instantaneamente (Teleporte).</p>
+                    </div>
+                    <button onclick="toggleWorldMap()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center cursor-pointer">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="relative flex-1 min-h-[320px] rounded-2xl overflow-hidden border border-amber-400/30 bg-[#071c33] flex items-center justify-center">
+                    <canvas id="world-map-canvas" width="560" height="560" class="w-full h-full max-w-[540px] max-h-[540px] cursor-pointer"></canvas>
+                    <div class="absolute bottom-3 left-3 glass-panel px-3 py-1.5 rounded-xl text-[10px] space-y-1">
+                        <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Cidade Segura (10)</div>
+                        <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-purple-400 inline-block"></span> Chefe Mundial</div>
+                        <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span> Você (Resonator)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista das 10 Cidades & Viagem Rápida -->
+            <div class="w-full lg:w-80 flex flex-col justify-between bg-slate-950/70 rounded-2xl p-3.5 border border-slate-800 overflow-y-auto">
+                <div>
+                    <div class="text-xs font-extrabold uppercase tracking-wider text-amber-300 mb-2 flex items-center justify-between">
+                        <span>10 Cidades do Continente</span>
+                        <span class="text-[10px] text-emerald-400">Zona Segura</span>
+                    </div>
+                    <div id="cities-list-container" class="space-y-1.5 max-h-[400px] overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         MODAL DE CONFIGURAÇÕES (GRÁFICOS, SOMBRAS, CONTROLES)
+    ========================================================= -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+        <div class="glass-panel rounded-2xl p-6 w-full max-w-md border-amber-300/40 relative">
+            <button onclick="toggleSettingsModal(false)" class="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h2 class="font-cinzel text-xl font-black text-amber-200 mb-1"><i class="fa-solid fa-sliders text-amber-400 mr-2"></i>Configurações</h2>
+            <p class="text-xs text-slate-400 mb-4">Ajuste a qualidade gráfica e sensibilidade para o seu computador.</p>
+
+            <div class="space-y-4 text-xs">
+                <!-- Qualidade Gráfica -->
+                <div>
+                    <label class="block font-bold text-slate-200 mb-1.5">Qualidade Gráfica & Sombras</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="applyGraphicsPreset('low')" id="gfx-low" class="gfx-btn py-2 rounded-xl border border-slate-700 bg-slate-900 text-slate-300 font-bold cursor-pointer">Leve</button>
+                        <button type="button" onclick="applyGraphicsPreset('medium')" id="gfx-medium" class="gfx-btn py-2 rounded-xl border border-slate-700 bg-slate-900 text-slate-300 font-bold cursor-pointer">Média</button>
+                        <button type="button" onclick="applyGraphicsPreset('high')" id="gfx-high" class="gfx-btn py-2 rounded-xl border border-amber-400 bg-amber-500/20 text-amber-200 font-bold cursor-pointer">Alta (Ultra)</button>
                     </div>
                 </div>
 
-                <!-- Pontos Disponíveis -->
-                <div class="mt-4 px-3.5 py-2.5 rounded-xl bg-amber-500/15 border border-amber-400/35 flex items-center justify-between">
-                    <span class="text-xs font-bold text-amber-200">Pontos de Atributo Disponíveis</span>
-                    <span id="sheet-attr-points" class="font-mono text-base font-black text-amber-300">0</span>
+                <!-- Pós-processamento Bloom -->
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-700/60">
+                    <div>
+                        <div class="font-bold text-slate-200">Brilho Cinematográfico (Bloom)</div>
+                        <div class="text-[10px] text-slate-400">Efeito luminoso nas armas, céu e habilidades</div>
+                    </div>
+                    <input type="checkbox" id="cfg-bloom" checked onchange="updateSettingsFromUI()" class="w-4 h-4 accent-amber-400 cursor-pointer">
                 </div>
 
-                <!-- Lista de Atributos com botão + -->
-                <div class="mt-4 space-y-2.5 text-xs">
-                    <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-emerald-400"><i class="fa-solid fa-heart mr-1.5"></i> Vitalidade (HP Máx)</div>
-                            <div class="text-[10px] text-slate-400">+120 Vida Máxima por ponto</div>
-                        </div>
-                        <div class="flex items-center gap-2.5">
-                            <span id="sheet-val-vit" class="font-mono font-bold text-sm text-white">10</span>
-                            <button onclick="spendAttributePoint('vit')" class="attr-plus-btn w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">+</button>
-                        </div>
+                <!-- Sensibilidade da Câmera -->
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-700/60">
+                    <div class="flex justify-between font-bold text-slate-200 mb-1">
+                        <span>Sensibilidade da Câmera</span>
+                        <span id="cfg-sens-val" class="text-amber-300 font-mono">1.0x</span>
                     </div>
+                    <input type="range" id="cfg-sens" min="0.4" max="2.2" step="0.1" value="1.0" oninput="updateSettingsFromUI()" class="w-full accent-amber-400 cursor-pointer">
+                </div>
 
-                    <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-rose-400"><i class="fa-solid fa-hand-fist mr-1.5"></i> Força (Ataque Físico)</div>
-                            <div class="text-[10px] text-slate-400">Aumenta dano de Espada e golpes corpo-a-corpo</div>
-                        </div>
-                        <div class="flex items-center gap-2.5">
-                            <span id="sheet-val-str" class="font-mono font-bold text-sm text-white">16</span>
-                            <button onclick="spendAttributePoint('str')" class="attr-plus-btn w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">+</button>
-                        </div>
+                <!-- Campo de Visão (FOV) -->
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-700/60">
+                    <div class="flex justify-between font-bold text-slate-200 mb-1">
+                        <span>Campo de Visão (FOV)</span>
+                        <span id="cfg-fov-val" class="text-sky-300 font-mono">58°</span>
                     </div>
+                    <input type="range" id="cfg-fov" min="48" max="78" step="2" value="58" oninput="updateSettingsFromUI()" class="w-full accent-sky-400 cursor-pointer">
+                </div>
 
-                    <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-amber-400"><i class="fa-solid fa-shield mr-1.5"></i> Defesa (Armadura)</div>
-                            <div class="text-[10px] text-slate-400">Reduz o dano recebido de inimigos e chefes</div>
-                        </div>
-                        <div class="flex items-center gap-2.5">
-                            <span id="sheet-val-def" class="font-mono font-bold text-sm text-white">15</span>
-                            <button onclick="spendAttributePoint('def')" class="attr-plus-btn w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">+</button>
-                        </div>
+                <!-- Botões de Ação -->
+                <div class="pt-2 flex justify-between items-center border-t border-slate-700/70">
+                    <button type="button" onclick="resetSavedData()" class="px-3 py-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-500/30 font-bold transition cursor-pointer">
+                        <i class="fa-solid fa-trash mr-1"></i> Apagar Save
+                    </button>
+                    <button type="button" onclick="toggleSettingsModal(false)" class="px-5 py-2 rounded-xl bg-amber-500 text-slate-950 font-extrabold hover:bg-amber-400 transition cursor-pointer">
+                        Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         MODAL DA FICHA DE PERSONAGEM & DISTRIBUIÇÃO DE ATRIBUTOS [C]
+    ========================================================= -->
+    <div id="char-sheet-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4">
+        <div class="glass-panel rounded-2xl p-6 w-full max-w-md border-amber-300/40 relative">
+            <button onclick="toggleCharacterSheet()" class="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-3 border-b border-slate-700/70 pb-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-700 flex items-center justify-center text-slate-950 text-xl font-black shadow-lg">
+                    <i id="sheet-class-icon" class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h2 id="sheet-char-name" class="font-cinzel text-xl font-black text-amber-200">Kaelen</h2>
+                    <p class="text-xs text-slate-300"><span id="sheet-class-title" class="text-amber-400 font-bold">Guerreiro</span> • Nível <span id="sheet-level" class="font-bold text-white">1</span></p>
+                </div>
+            </div>
+
+            <div class="mt-4 px-3.5 py-2.5 rounded-xl bg-amber-500/15 border border-amber-400/35 flex items-center justify-between">
+                <span class="text-xs font-bold text-amber-200">Pontos de Atributo Disponíveis</span>
+                <span id="sheet-attr-points" class="font-mono text-base font-black text-amber-300">0</span>
+            </div>
+
+            <div class="mt-4 space-y-2.5 text-xs">
+                <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-emerald-400"><i class="fa-solid fa-heart mr-1.5"></i> Vitalidade (HP Máx)</div>
+                        <div class="text-[10px] text-slate-400">+120 Vida Máxima por ponto</div>
                     </div>
-
-                    <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-purple-400"><i class="fa-solid fa-hat-wizard mr-1.5"></i> Inteligência (Magia & Mana)</div>
-                            <div class="text-[10px] text-slate-400">+15 Mana Máx e dano de Cajado / Habilidades [E]/[R]</div>
-                        </div>
-                        <div class="flex items-center gap-2.5">
-                            <span id="sheet-val-int" class="font-mono font-bold text-sm text-white">8</span>
-                            <button onclick="spendAttributePoint('int')" class="attr-plus-btn w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">+</button>
-                        </div>
-                    </div>
-
-                    <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
-                        <div>
-                            <div class="font-bold text-teal-400"><i class="fa-solid fa-wind mr-1.5"></i> Agilidade (Crítico & Precisão)</div>
-                            <div class="text-[10px] text-slate-400">+1.5% Chance Crítica e dano de Arco / Pistolas</div>
-                        </div>
-                        <div class="flex items-center gap-2.5">
-                            <span id="sheet-val-agi" class="font-mono font-bold text-sm text-white">11</span>
-                            <button onclick="spendAttributePoint('agi')" class="attr-plus-btn w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">+</button>
-                        </div>
+                    <div class="flex items-center gap-2.5">
+                        <span id="sheet-val-vit" class="font-mono font-bold text-sm text-white">12</span>
+                        <button onclick="spendAttributePoint('vit')" class="attr-plus-btn w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 disabled:opacity-30 cursor-pointer">+</button>
                     </div>
                 </div>
 
-                <!-- Resumo Calculado -->
-                <div class="mt-4 pt-3 border-t border-slate-700/70 grid grid-cols-3 gap-2 text-center text-[11px]">
-                    <div class="bg-slate-950/70 p-2 rounded-lg">
-                        <div class="text-slate-400">Poder Físico</div>
-                        <div id="sheet-calc-patk" class="font-mono font-bold text-rose-300">100</div>
+                <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-rose-400"><i class="fa-solid fa-hand-fist mr-1.5"></i> Ataque (Dano Físico)</div>
+                        <div class="text-[10px] text-slate-400">Aumenta dano de Espada e golpes básicos</div>
                     </div>
-                    <div class="bg-slate-950/70 p-2 rounded-lg">
-                        <div class="text-slate-400">Poder Mágico</div>
-                        <div id="sheet-calc-matk" class="font-mono font-bold text-purple-300">100</div>
+                    <div class="flex items-center gap-2.5">
+                        <span id="sheet-val-str" class="font-mono font-bold text-sm text-white">17</span>
+                        <button onclick="spendAttributePoint('str')" class="attr-plus-btn w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 disabled:opacity-30 cursor-pointer">+</button>
                     </div>
-                    <div class="bg-slate-950/70 p-2 rounded-lg">
-                        <div class="text-slate-400">Chance Crítica</div>
-                        <div id="sheet-calc-crit" class="font-mono font-bold text-amber-300">15%</div>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-amber-400"><i class="fa-solid fa-shield mr-1.5"></i> Defesa (Armadura)</div>
+                        <div class="text-[10px] text-slate-400">Reduz dano sofrido de inimigos e chefes</div>
                     </div>
+                    <div class="flex items-center gap-2.5">
+                        <span id="sheet-val-def" class="font-mono font-bold text-sm text-white">16</span>
+                        <button onclick="spendAttributePoint('def')" class="attr-plus-btn w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 disabled:opacity-30 cursor-pointer">+</button>
+                    </div>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-purple-400"><i class="fa-solid fa-hat-wizard mr-1.5"></i> Ressonância (Dano Elemental)</div>
+                        <div class="text-[10px] text-slate-400">+15 Energia Máx e dano de [E] / [R]</div>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <span id="sheet-val-int" class="font-mono font-bold text-sm text-white">10</span>
+                        <button onclick="spendAttributePoint('int')" class="attr-plus-btn w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 disabled:opacity-30 cursor-pointer">+</button>
+                    </div>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-teal-400"><i class="fa-solid fa-wind mr-1.5"></i> Agilidade (Taxa Crítica)</div>
+                        <div class="text-[10px] text-slate-400">+1.5% Taxa Crítica e dano à distância</div>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <span id="sheet-val-agi" class="font-mono font-bold text-sm text-white">12</span>
+                        <button onclick="spendAttributePoint('agi')" class="attr-plus-btn w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 disabled:opacity-30 cursor-pointer">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-700/70 grid grid-cols-3 gap-2 text-center text-[11px]">
+                <div class="bg-slate-950/70 p-2 rounded-lg">
+                    <div class="text-slate-400">Poder Físico</div>
+                    <div id="sheet-calc-patk" class="font-mono font-bold text-rose-300">100</div>
+                </div>
+                <div class="bg-slate-950/70 p-2 rounded-lg">
+                    <div class="text-slate-400">Poder Elemental</div>
+                    <div id="sheet-calc-matk" class="font-mono font-bold text-purple-300">100</div>
+                </div>
+                <div class="bg-slate-950/70 p-2 rounded-lg">
+                    <div class="text-slate-400">Taxa Crítica</div>
+                    <div id="sheet-calc-crit" class="font-mono font-bold text-amber-300">18%</div>
                 </div>
             </div>
         </div>
@@ -651,10 +754,8 @@
                 osc.type = type;
                 osc.frequency.setValueAtTime(freq, now);
                 if (slideFreq) osc.frequency.exponentialRampToValueAtTime(slideFreq, now + duration);
-                
                 gain.gain.setValueAtTime(vol, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-                
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
                 osc.start(now);
@@ -676,12 +777,9 @@
                 this.playTone(1320, 'sine', 0.45, 0.28, 2640);
                 this.playTone(1980, 'triangle', 0.35, 0.22, 990);
             }
-            playDodge() {
-                this.playTone(620, 'sine', 0.25, 0.18, 210);
-            }
-            playSkill() {
-                this.playTone(440, 'triangle', 0.4, 0.2, 880);
-            }
+            playDodge() { this.playTone(620, 'sine', 0.25, 0.18, 210); }
+            playSkill() { this.playTone(440, 'triangle', 0.4, 0.2, 880); }
+            playSwap() { this.playTone(587.33, 'sine', 0.28, 0.22, 880); }
             playUltimate() {
                 this.playTone(220, 'sawtooth', 0.85, 0.24, 660);
                 setTimeout(() => this.playTone(554.37, 'sine', 0.7, 0.22, 1108.73), 120);
@@ -695,88 +793,103 @@
         const sfx = new SolisAudio();
 
         /* =========================================================================
-           2. DADOS DAS 8 CLASSES & PALETAS DE CUSTOMIZAÇÃO (ETAPA 1 & 2)
+           2. DADOS DE ELEMENTOS, CLASSES, CUSTOMIZAÇÃO & AS 10 CIDADES
         ========================================================================= */
+        const ELEMENTS = {
+            Aero: { name: 'Aero (Vento)', color: '#34d399', hex: 0x34d399, badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40' },
+            Glacio: { name: 'Glacio (Gelo)', color: '#38bdf8', hex: 0x38bdf8, badge: 'bg-sky-500/20 text-sky-300 border-sky-400/40' },
+            Fusion: { name: 'Fusion (Fogo)', color: '#fb7185', hex: 0xfb7185, badge: 'bg-rose-500/20 text-rose-300 border-rose-400/40' },
+            Electro: { name: 'Electro (Raio)', color: '#c084fc', hex: 0xc084fc, badge: 'bg-purple-500/20 text-purple-300 border-purple-400/40' },
+            Spectro: { name: 'Spectro (Luz)', color: '#facc15', hex: 0xfacc15, badge: 'bg-amber-500/20 text-amber-300 border-amber-400/40' },
+            Havoc: { name: 'Havoc (Trevas)', color: '#f43f5e', hex: 0xf43f5e, badge: 'bg-pink-500/20 text-pink-300 border-pink-400/40' }
+        };
+
         const RPG_CLASSES = [
             {
-                id: 'warrior', name: 'Guerreiro', role: 'Vanguarda / Tanque', icon: 'fa-shield-halved',
+                id: 'warrior', name: 'Guerreiro', element: 'Aero', icon: 'fa-shield-halved',
                 weaponIdx: 0, weaponLabel: 'Espada',
-                desc: 'Mestre da lâmina pesada com elevada resistência física, contra-ataques devastadores e postura inabalável.',
-                passive: '+25% Dano de Parry e Postura',
-                stats: { hp: 1350, mp: 90, vit: 12, str: 17, def: 16, int: 7, agi: 10 },
-                defaultOutfit: '#1e3a8a', defaultHair: '#f1f5f9', defaultEye: '#38bdf8'
+                desc: 'Mestre da lâmina ágil que manipula correntes de vento para executar contra-ataques Parry devastadores.',
+                passive: '+25% Dano de Parry & Quebra de Postura',
+                stats: { hp: 1350, mp: 100, vit: 12, str: 17, def: 16, int: 10, agi: 12 }
             },
             {
-                id: 'mage', name: 'Mago', role: 'Conjurador Elemental', icon: 'fa-wand-magic-sparkles',
+                id: 'mage', name: 'Mago', element: 'Electro', icon: 'fa-wand-magic-sparkles',
                 weaponIdx: 1, weaponLabel: 'Cajado',
-                desc: 'Manipula energias astrais e tempestades arcanas à distância com alto dano em área e regeneração de mana.',
+                desc: 'Conjurador tempestuoso especializado em descargas arcanas de longa distância e dano elemental em área.',
                 passive: '+30% Dano de Habilidades [E] e [R]',
-                stats: { hp: 950, mp: 220, vit: 8, str: 7, def: 9, int: 20, agi: 11 },
-                defaultOutfit: '#4c1d95', defaultHair: '#e0e7ff', defaultEye: '#c084fc'
+                stats: { hp: 1050, mp: 200, vit: 9, str: 9, def: 10, int: 20, agi: 12 }
             },
             {
-                id: 'archer', name: 'Arqueiro', role: 'Atirador de Precisão', icon: 'fa-crosshairs',
+                id: 'archer', name: 'Arqueiro', element: 'Aero', icon: 'fa-crosshairs',
                 weaponIdx: 3, weaponLabel: 'Arco',
-                desc: 'Caçador ágil especializado em tiros críticos de longa distância, mobilidade aérea e rajadas perfurantes.',
-                passive: '+20% Dano Crítico e Mira TPS',
-                stats: { hp: 1050, mp: 130, vit: 9, str: 11, def: 10, int: 10, agi: 19 },
-                defaultOutfit: '#065f46', defaultHair: '#fde68a', defaultEye: '#34d399'
+                desc: 'Atirador de precisão com mobilidade aérea e flechas perfurantes de altíssima taxa crítica.',
+                passive: '+25% Dano Crítico & Mira TPS',
+                stats: { hp: 1120, mp: 130, vit: 10, str: 12, def: 11, int: 11, agi: 19 }
             },
             {
-                id: 'assassin', name: 'Assassino', role: 'Letalidade & Furtividade', icon: 'fa-khanda',
-                weaponIdx: 0, weaponLabel: 'Lâmina Ágil',
-                desc: 'Golpes velozes e esquivas perfeitas que amplificam o dano crítico e dilaceram inimigos desprevenidos.',
+                id: 'assassin', name: 'Assassino', element: 'Havoc', icon: 'fa-khanda',
+                weaponIdx: 0, weaponLabel: 'Lâmina Sombria',
+                desc: 'Combatente veloz que transforma Esquivas Perfeitas em cortes dimensionais de energia Havoc.',
                 passive: '+35% Dano após Esquiva Perfeita',
-                stats: { hp: 1020, mp: 120, vit: 9, str: 15, def: 9, int: 9, agi: 20 },
-                defaultOutfit: '#18181b', defaultHair: '#94a3b8', defaultEye: '#f43f5e'
+                stats: { hp: 1100, mp: 120, vit: 9, str: 16, def: 10, int: 11, agi: 20 }
             },
             {
-                id: 'paladin', name: 'Paladino', role: 'Guardião Sagrado', icon: 'fa-sun',
+                id: 'paladin', name: 'Paladino', element: 'Spectro', icon: 'fa-sun',
                 weaponIdx: 0, weaponLabel: 'Espada Solar',
-                desc: 'Cavaleiro abençoado que combina defesa absoluta com magia solar capaz de purificar chefes e curar feridas.',
-                passive: 'Regenera Vida ao ativar Circuito Forte',
-                stats: { hp: 1400, mp: 150, vit: 13, str: 14, def: 17, int: 13, agi: 8 },
-                defaultOutfit: '#b45309', defaultHair: '#fef08a', defaultEye: '#facc15'
+                desc: 'Guardião luminoso de defesa inabalável capaz de restaurar a equipe ao liberar sua energia Spectro.',
+                passive: 'Cura 25% da Vida ao ativar [R]',
+                stats: { hp: 1450, mp: 140, vit: 13, str: 14, def: 17, int: 13, agi: 9 }
             },
             {
-                id: 'necromancer', name: 'Necromante', role: 'Sombrio / Drenagem', icon: 'fa-skull',
-                weaponIdx: 1, weaponLabel: 'Cetro Sombrio',
-                desc: 'Canaliza essências espectrais para drenar a força vital dos inimigos a cada feitiço lançado.',
+                id: 'necromancer', name: 'Necromante', element: 'Havoc', icon: 'fa-skull',
+                weaponIdx: 1, weaponLabel: 'Cetro Abissal',
+                desc: 'Alquimista das sombras que drena a essência vital dos inimigos a cada projeção elemental.',
                 passive: 'Roubo de Vida em ataques mágicos',
-                stats: { hp: 1000, mp: 200, vit: 9, str: 8, def: 10, int: 19, agi: 10 },
-                defaultOutfit: '#311042', defaultHair: '#cbd5e1', defaultEye: '#a855f7'
+                stats: { hp: 1080, mp: 190, vit: 9, str: 9, def: 11, int: 19, agi: 11 }
             },
             {
-                id: 'berserker', name: 'Berserker', role: 'Fúria Destruidora', icon: 'fa-fire',
-                weaponIdx: 0, weaponLabel: 'Espada Pesada',
-                desc: 'Guerreiro implacável que converte adrenalina em força bruta extrema, esmagando a postura dos monstros.',
-                passive: '+30% Força quando Vida < 50%',
-                stats: { hp: 1300, mp: 80, vit: 12, str: 21, def: 11, int: 6, agi: 12 },
-                defaultOutfit: '#7f1d1d', defaultHair: '#fca5a5', defaultEye: '#fb923c'
+                id: 'berserker', name: 'Berserker', element: 'Fusion', icon: 'fa-fire',
+                weaponIdx: 0, weaponLabel: 'Lâmina Ígnea',
+                desc: 'Guerreiro flamejante cuja força física explode quando entra no calor da batalha.',
+                passive: '+30% Ataque quando Vida < 50%',
+                stats: { hp: 1320, mp: 90, vit: 12, str: 21, def: 12, int: 8, agi: 12 }
             },
             {
-                id: 'gunslinger', name: 'Pistoleiro', role: 'Cadência & Tecnologia', icon: 'fa-gun',
-                weaponIdx: 2, weaponLabel: 'Pistolas',
-                desc: 'Especialista em armas arcanas de disparo rápido, mantendo pressão constante e recarga veloz.',
-                passive: '+25% Velocidade de Disparo com Pistolas',
-                stats: { hp: 1080, mp: 140, vit: 9, str: 12, def: 11, int: 12, agi: 18 },
-                defaultOutfit: '#1e293b', defaultHair: '#38bdf8', defaultEye: '#fbbf24'
+                id: 'gunslinger', name: 'Pistoleiro', element: 'Glacio', icon: 'fa-gun',
+                weaponIdx: 2, weaponLabel: 'Pistolas Criogênicas',
+                desc: 'Especialista em pistolas arcanas de disparo rápido com projéteis congelantes de alta cadência.',
+                passive: '+25% Cadência de Disparo',
+                stats: { hp: 1150, mp: 140, vit: 10, str: 13, def: 11, int: 12, agi: 18 }
             }
         ];
 
+        // 10 CIDADES DISTRIBUÍDAS PELO MAPA GIGANTE (2200 x 2200)
+        const WORLD_CITIES = [
+            { id: 'solis', name: 'Porto de Solis', biome: 'Costa Central', x: 0, z: 80, color: '#facc15', desc: 'Cidade portuária inicial com farol e guilda.' },
+            { id: 'eldoria', name: 'Vila de Eldoria', biome: 'Planície Oeste', x: -340, z: 140, color: '#4ade80', desc: 'Vila campestre rodeada por moinhos e campos.' },
+            { id: 'aethelgard', name: 'Cidadela Aethelgard', biome: 'Planalto Real', x: 40, z: -260, color: '#fbbf24', desc: 'Capital murada no coração do continente.' },
+            { id: 'brumas', name: 'Santuário das Brumas', biome: 'Floresta Ancestral', x: 380, z: 60, color: '#34d399', desc: 'Cidade élfica erguida sob árvores colossais.' },
+            { id: 'zahara', name: 'Oásis de Zahara', biome: 'Deserto Dourado', x: 460, z: 440, color: '#f59e0b', desc: 'Cidade de arenito com cúpulas solares.' },
+            { id: 'pedraruina', name: 'Bastião Pedra-Ruína', biome: 'Desfiladeiro Sul', x: -420, z: 480, color: '#a8a29e', desc: 'Fortaleza escavada nas falésias antigas.' },
+            { id: 'ignis', name: 'Forja de Ignis', biome: 'Terras Vulcânicas', x: 520, z: -420, color: '#f43f5e', desc: 'Cidade-forja abastecida pelos rios de magma.' },
+            { id: 'frosthelm', name: 'Pico de Frosthelm', biome: 'Montanhas Glaciais', x: -60, z: -640, color: '#38bdf8', desc: 'Cidadela cristalina no sopé da montanha nevada.' },
+            { id: 'astral', name: 'Observatório Astral', biome: 'Penhasco Noroeste', x: -520, z: -360, color: '#c084fc', desc: 'Torre arcana de pesquisa sobre Ressonância.' },
+            { id: 'crepusculo', name: 'Cais do Crepúsculo', biome: 'Arquipélago Sul', x: 60, z: 620, color: '#2dd4bf', desc: 'Porto dos caçadores de leviatãs e chefes.' }
+        ];
+
         const HAIR_COLORS = [
-            { name: 'Platina Estelar', hex: '#f1f5f9' },
+            { name: 'Platina Cinza', hex: '#e5e7eb' },
             { name: 'Ouro Solar', hex: '#fde047' },
             { name: 'Ébano Noturno', hex: '#1e293b' },
             { name: 'Carmesim Rubi', hex: '#e11d48' },
             { name: 'Safira Celeste', hex: '#38bdf8' },
-            { name: 'Esmeralda Silvestre', hex: '#10b981' },
+            { name: 'Esmeralda Viva', hex: '#10b981' },
             { name: 'Ametista Mística', hex: '#a855f7' },
             { name: 'Castanho Nobre', hex: '#78350f' }
         ];
 
         const EYE_COLORS = [
-            { name: 'Safira Solar', hex: '#38bdf8' },
+            { name: 'Ciano Astral', hex: '#38bdf8' },
             { name: 'Âmbar Dourado', hex: '#facc15' },
             { name: 'Rubi Carmesim', hex: '#f43f5e' },
             { name: 'Esmeralda Viva', hex: '#10b981' },
@@ -793,23 +906,30 @@
         ];
 
         const OUTFIT_COLORS = [
-            { name: 'Azul Astral', hex: '#1e3a8a' },
-            { name: 'Obsidiana Real', hex: '#18181b' },
+            { name: 'Azul Real & Branco', hex: '#1e3a8a' },
+            { name: 'Obsidiana & Ouro', hex: '#18181b' },
             { name: 'Carmesim Imperial', hex: '#7f1d1d' },
             { name: 'Verde Guardião', hex: '#065f46' },
             { name: 'Púrpura Arcano', hex: '#4c1d95' },
-            { name: 'Ouro Paladino', hex: '#92400e' },
-            { name: 'Branco Celestia', hex: '#e2e8f0' }
+            { name: 'Âmbar Solar', hex: '#92400e' }
         ];
 
         const characterConfig = {
-            name: 'Aetheris',
+            name: 'Kaelen',
+            gender: 'male',
             classId: 'warrior',
-            hairStyle: 'long',
-            hairColor: '#f1f5f9',
+            hairStyle: 'layered',
+            hairColor: '#e5e7eb',
             eyeColor: '#38bdf8',
             skinColor: '#ffe8d8',
             outfitColor: '#1e3a8a'
+        };
+
+        const gameSettings = {
+            graphics: 'high',
+            bloom: true,
+            sensitivity: 1.0,
+            fov: 58
         };
 
         /* =========================================================================
@@ -817,9 +937,9 @@
         ========================================================================= */
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x8bb8e8, 0.0022);
+        scene.fog = new THREE.FogExp2(0x8bb8e8, 0.0011);
 
-        const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 1600);
+        const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 2400);
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -829,37 +949,35 @@
         renderer.toneMappingExposure = 1.08;
         container.appendChild(renderer.domElement);
 
-        // Pós-Processamento (Bloom Cinematográfico)
         const composer = new THREE.EffectComposer(renderer);
         const renderPass = new THREE.RenderPass(scene, camera);
         composer.addPass(renderPass);
         const bloomPass = new THREE.UnrealBloomPass(
             new THREE.Vector2(window.innerWidth, window.innerHeight),
-            0.42, 0.65, 0.86
+            0.38, 0.65, 0.86
         );
         composer.addPass(bloomPass);
 
-        // Luzes Principais
-        const hemiLight = new THREE.HemisphereLight(0xbbe0ff, 0x3b4d3b, 0.72);
+        const hemiLight = new THREE.HemisphereLight(0xbbe0ff, 0x3b4d3b, 0.78);
         scene.add(hemiLight);
 
         const sunLight = new THREE.DirectionalLight(0xfff1d6, 1.85);
-        sunLight.position.set(160, 220, 120);
+        sunLight.position.set(220, 320, 180);
         sunLight.castShadow = true;
         sunLight.shadow.mapSize.width = 2048;
         sunLight.shadow.mapSize.height = 2048;
         sunLight.shadow.camera.near = 10;
-        sunLight.shadow.camera.far = 650;
-        const d = 160;
-        sunLight.shadow.camera.left = -d;
-        sunLight.shadow.camera.right = d;
-        sunLight.shadow.camera.top = d;
-        sunLight.shadow.camera.bottom = -d;
+        sunLight.shadow.camera.far = 900;
+        const shadowD = 220;
+        sunLight.shadow.camera.left = -shadowD;
+        sunLight.shadow.camera.right = shadowD;
+        sunLight.shadow.camera.top = shadowD;
+        sunLight.shadow.camera.bottom = -shadowD;
         sunLight.shadow.bias = -0.0005;
         scene.add(sunLight);
 
-        // Céu Procedural com Nuvens em Movimento (Shader GLSL)
-        const skyGeo = new THREE.SphereGeometry(1100, 32, 20);
+        // Céu Procedural
+        const skyGeo = new THREE.SphereGeometry(1800, 32, 20);
         const skyMat = new THREE.ShaderMaterial({
             side: THREE.BackSide,
             depthWrite: false,
@@ -883,26 +1001,18 @@
                 uniform vec3 uHorizonColor;
                 uniform vec3 uSunDir;
                 varying vec3 vWorldPos;
-
                 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
                 float noise(vec2 p) {
-                    vec2 i = floor(p);
-                    vec2 f = fract(p);
+                    vec2 i = floor(p); vec2 f = fract(p);
                     vec2 u = f * f * (3.0 - 2.0 * f);
                     return mix(mix(hash(i + vec2(0.0,0.0)), hash(i + vec2(1.0,0.0)), u.x),
                                mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y);
                 }
                 float fbm(vec2 p) {
-                    float v = 0.0;
-                    float a = 0.5;
-                    for (int i = 0; i < 4; i++) {
-                        v += a * noise(p);
-                        p *= 2.03;
-                        a *= 0.5;
-                    }
+                    float v = 0.0; float a = 0.5;
+                    for (int i = 0; i < 4; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; }
                     return v;
                 }
-
                 void main() {
                     vec3 dir = normalize(vWorldPos);
                     float h = clamp(dir.y, 0.0, 1.0);
@@ -910,7 +1020,6 @@
                     float sunAmt = max(dot(dir, uSunDir), 0.0);
                     col += vec3(1.0, 0.88, 0.65) * pow(sunAmt, 16.0) * 0.45;
                     col += vec3(1.0, 0.96, 0.85) * pow(sunAmt, 240.0) * 1.4;
-
                     if (dir.y > 0.04) {
                         vec2 uv = dir.xz / (dir.y + 0.18) * 1.6 + vec2(uTime * 0.015, uTime * 0.008);
                         float c = fbm(uv);
@@ -925,39 +1034,51 @@
         scene.add(new THREE.Mesh(skyGeo, skyMat));
 
         /* =========================================================================
-           4. TERRENO PROCEDURAL DO ARQUIPÉLAGO SOLIS & OCEANO SHADER
+           4. TERRENO GIGANTE (2200x2200), BIOMAS & AS 10 CIDADES
         ========================================================================= */
         const WATER_LEVEL = 0.0;
 
         function pseudoNoise2D(x, z) {
-            return Math.sin(x * 0.025) * Math.cos(z * 0.025) * 0.5 +
-                   Math.sin(x * 0.07 + z * 0.05) * 0.25 +
-                   Math.cos(x * 0.14 - z * 0.11) * 0.125;
+            return Math.sin(x * 0.012) * Math.cos(z * 0.012) * 0.55 +
+                   Math.sin(x * 0.032 + z * 0.024) * 0.28 +
+                   Math.cos(x * 0.07 - z * 0.06) * 0.14;
         }
 
         function getTerrainHeight(x, z) {
-            const distCenter = Math.hypot(x, z);
-            let h = 16.5 * Math.exp(-(distCenter * distCenter) / 14500);
-            const distEast = Math.hypot(x - 165, z + 40);
-            h += 14.0 * Math.exp(-(distEast * distEast) / 5800);
-            const distWest = Math.hypot(x + 150, z - 85);
-            h += 12.5 * Math.exp(-(distWest * distWest) / 5200);
-            const distNorth = Math.hypot(x + 25, z + 175);
-            h += 22.0 * Math.exp(-(distNorth * distNorth) / 6400);
-            const distSouth = Math.hypot(x - 35, z - 150);
-            h += 9.5 * Math.exp(-(distSouth * distSouth) / 4800);
+            const distFromCenter = Math.hypot(x, z);
+            // Grande continente central + arquipélago externo
+            let h = 18.0 * Math.exp(-(distFromCenter * distFromCenter) / 480000);
+            // Montanha Glacial ao Norte
+            const dNorth = Math.hypot(x + 60, z + 680);
+            h += 28.0 * Math.exp(-(dNorth * dNorth) / 42000);
+            // Vulcão a Nordeste
+            const dVolcano = Math.hypot(x - 540, z + 440);
+            h += 24.0 * Math.exp(-(dVolcano * dVolcano) / 36000);
+            // Dunas do Deserto a Sudeste
+            const dDesert = Math.hypot(x - 460, z - 440);
+            h += 12.0 * Math.exp(-(dDesert * dDesert) / 55000);
+            // Ilhas ao Sul
+            const dSouth = Math.hypot(x - 60, z - 620);
+            h += 14.0 * Math.exp(-(dSouth * dSouth) / 38000);
 
-            h += pseudoNoise2D(x, z) * 4.2;
-            const spawnDist = Math.hypot(x, z - 32);
-            if (spawnDist < 22) {
-                const blend = spawnDist / 22;
-                h = h * blend + 6.2 * (1 - blend);
+            h += pseudoNoise2D(x, z) * 5.2;
+
+            // Nivelar terreno plano ao redor de cada uma das 10 Cidades!
+            for (const city of WORLD_CITIES) {
+                const distCity = Math.hypot(x - city.x, z - city.z);
+                if (distCity < 58) {
+                    const targetCityY = city.id === 'frosthelm' ? 14.5 : (city.id === 'ignis' ? 12.0 : 6.8);
+                    const blend = Math.max(0, Math.min(1, (distCity - 34) / 24));
+                    h = targetCityY * (1 - blend) + (h - 2.5) * blend;
+                    return h;
+                }
             }
-            return h - 3.6;
+
+            return h - 2.5;
         }
 
-        const terrainSize = 620;
-        const terrainSegs = 160;
+        const terrainSize = 2000;
+        const terrainSegs = 220;
         const terrainGeo = new THREE.PlaneGeometry(terrainSize, terrainSize, terrainSegs, terrainSegs);
         terrainGeo.rotateX(-Math.PI / 2);
 
@@ -966,7 +1087,9 @@
         const cSand = new THREE.Color(0xe6d5a7);
         const cGrass = new THREE.Color(0x4a8c4a);
         const cHighGrass = new THREE.Color(0x63a653);
-        const cRock = new THREE.Color(0x69707d);
+        const cSnow = new THREE.Color(0xf1f5f9);
+        const cAsh = new THREE.Color(0x3f3f46);
+        const cDesert = new THREE.Color(0xeab308);
 
         for (let i = 0; i < posAttr.count; i++) {
             const x = posAttr.getX(i);
@@ -975,9 +1098,22 @@
             posAttr.setY(i, y);
 
             const col = new THREE.Color();
-            if (y < 1.1) col.copy(cSand);
-            else if (y < 9.5) col.copy(cGrass).lerp(cHighGrass, (y - 1.1) / 8.4);
-            else col.copy(cHighGrass).lerp(cRock, Math.min((y - 9.5) / 7.5, 1));
+            if (y < 1.0) {
+                col.copy(cSand);
+            } else if (z < -430 && x < 240) {
+                // Bioma Glacial Norte
+                col.copy(cSnow);
+            } else if (x > 300 && z < -220) {
+                // Bioma Vulcânico Nordeste
+                col.copy(cAsh);
+            } else if (x > 250 && z > 220) {
+                // Bioma Deserto Sudeste
+                col.copy(cDesert).lerp(cSand, 0.45);
+            } else if (y < 11.5) {
+                col.copy(cGrass).lerp(cHighGrass, (y - 1.0) / 10.5);
+            } else {
+                col.copy(cHighGrass).lerp(cSnow, Math.min((y - 11.5) / 12.0, 1));
+            }
             colors.push(col.r, col.g, col.b);
         }
         terrainGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -993,7 +1129,7 @@
         scene.add(terrainMesh);
 
         // Oceano Shader
-        const oceanGeo = new THREE.PlaneGeometry(2400, 2400, 64, 64);
+        const oceanGeo = new THREE.PlaneGeometry(3600, 3600, 64, 64);
         oceanGeo.rotateX(-Math.PI / 2);
         const oceanMat = new THREE.ShaderMaterial({
             transparent: true,
@@ -1009,7 +1145,7 @@
                 varying float vWave;
                 void main() {
                     vec4 wp = modelMatrix * vec4(position, 1.0);
-                    float w = sin(wp.x * 0.08 + uTime * 1.8) * 0.18 + cos(wp.z * 0.07 + uTime * 1.4) * 0.18;
+                    float w = sin(wp.x * 0.06 + uTime * 1.8) * 0.18 + cos(wp.z * 0.06 + uTime * 1.4) * 0.18;
                     wp.y += w;
                     vWave = w;
                     vWorldPos = wp.xyz;
@@ -1023,13 +1159,11 @@
                 uniform vec3 uSunDir;
                 varying vec3 vWorldPos;
                 varying float vWave;
-
                 void main() {
                     vec3 viewVec = normalize(cameraPosition - vWorldPos);
                     vec3 normal = normalize(vec3(
-                        cos(vWorldPos.x * 0.15 + uTime * 2.0) * 0.08,
-                        1.0,
-                        sin(vWorldPos.z * 0.15 + uTime * 1.7) * 0.08
+                        cos(vWorldPos.x * 0.12 + uTime * 2.0) * 0.08, 1.0,
+                        sin(vWorldPos.z * 0.12 + uTime * 1.7) * 0.08
                     ));
                     float fresnel = pow(1.0 - max(dot(viewVec, normal), 0.0), 3.0);
                     vec3 baseCol = mix(uDeepColor, uShallowColor, fresnel * 0.75 + vWave * 0.4);
@@ -1044,20 +1178,15 @@
         oceanMesh.position.y = WATER_LEVEL;
         scene.add(oceanMesh);
 
-        // Grama Instanciada ao Vento
-        const GRASS_COUNT = 24000;
-        const bladeGeo = new THREE.PlaneGeometry(0.16, 0.85, 1, 2);
-        bladeGeo.translate(0, 0.425, 0);
-        const grassMat = new THREE.MeshStandardMaterial({
-            color: 0x68b856,
-            side: THREE.DoubleSide,
-            roughness: 0.7
-        });
+        // Grama Instanciada
+        const GRASS_COUNT = 32000;
+        const bladeGeo = new THREE.PlaneGeometry(0.18, 0.9, 1, 2);
+        bladeGeo.translate(0, 0.45, 0);
+        const grassMat = new THREE.MeshStandardMaterial({ color: 0x68b856, side: THREE.DoubleSide, roughness: 0.7 });
         grassMat.onBeforeCompile = (shader) => {
             shader.uniforms.uTime = { value: 0 };
             grassMat.userData.shader = shader;
-            shader.vertexShader = `uniform float uTime;
-` + shader.vertexShader;
+            shader.vertexShader = `uniform float uTime;\n` + shader.vertexShader;
             shader.vertexShader = shader.vertexShader.replace(
                 `#include <begin_vertex>`,
                 `#include <begin_vertex>
@@ -1067,18 +1196,18 @@
                 transformed.z += sway * 0.5;`
             );
         };
-
         const grassInstanced = new THREE.InstancedMesh(bladeGeo, grassMat, GRASS_COUNT);
         const dummy = new THREE.Object3D();
         let gPlaced = 0;
         for (let i = 0; i < GRASS_COUNT * 2 && gPlaced < GRASS_COUNT; i++) {
-            const gx = (Math.random() - 0.5) * 440;
-            const gz = (Math.random() - 0.5) * 440;
+            const gx = (Math.random() - 0.5) * 1400;
+            const gz = (Math.random() - 0.5) * 1400;
+            if (gz < -420 || (gx > 280 && gz < -200) || (gx > 250 && gz > 220)) continue;
             const gy = getTerrainHeight(gx, gz);
-            if (gy > 1.5 && gy < 11.5) {
+            if (gy > 1.5 && gy < 12.0) {
                 dummy.position.set(gx, gy - 0.05, gz);
                 dummy.rotation.y = Math.random() * Math.PI;
-                const sc = 0.7 + Math.random() * 0.75;
+                const sc = 0.75 + Math.random() * 0.75;
                 dummy.scale.set(sc, sc, sc);
                 dummy.updateMatrix();
                 grassInstanced.setMatrixAt(gPlaced++, dummy.matrix);
@@ -1087,160 +1216,191 @@
         grassInstanced.count = gPlaced;
         scene.add(grassInstanced);
 
-        // Arquitetura Costeira & Pontes entre Ilhas
+        // CONSTRUÇÃO ARQUITETÔNICA DAS 10 CIDADES NO MUNDO 3D
         const worldProps = new THREE.Group();
         scene.add(worldProps);
+        const waypointBeacons = [];
 
-        function buildLighthouse(x, z) {
-            const y = getTerrainHeight(x, z);
+        function buildCityArchitecture(city) {
+            const cy = getTerrainHeight(city.x, city.z);
             const g = new THREE.Group();
-            g.position.set(x, y, z);
+            g.position.set(city.x, cy, city.z);
 
-            const base = new THREE.Mesh(
-                new THREE.CylinderGeometry(3.2, 4.4, 18, 12),
-                new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.6 })
-            );
-            base.position.y = 9;
-            base.castShadow = true;
-            base.receiveShadow = true;
-            g.add(base);
+            const wallMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.65 });
+            const roofColor = new THREE.Color(city.color);
+            const roofMat = new THREE.MeshStandardMaterial({ color: roofColor, roughness: 0.45, metalness: 0.2 });
+            const goldMat = new THREE.MeshStandardMaterial({ color: 0xe6c675, metalness: 0.85, roughness: 0.25 });
 
-            const stripe = new THREE.Mesh(
-                new THREE.CylinderGeometry(3.55, 3.85, 4.5, 12),
-                new THREE.MeshStandardMaterial({ color: 0xc83e3b, roughness: 0.5 })
+            // Praça Central Circular Pavimentada
+            const plaza = new THREE.Mesh(
+                new THREE.CylinderGeometry(28, 30, 0.4, 24),
+                new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.85 })
             );
-            stripe.position.y = 10;
-            g.add(stripe);
+            plaza.position.y = 0.1;
+            plaza.receiveShadow = true;
+            g.add(plaza);
 
-            const lantern = new THREE.Mesh(
-                new THREE.CylinderGeometry(2.3, 2.3, 3.2, 12),
-                new THREE.MeshBasicMaterial({ color: 0xffe484 })
-            );
-            lantern.position.y = 19.5;
-            g.add(lantern);
+            // Cristal de Teletransporte (Resonance Nexus) no centro da Cidade
+            const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 2.4, 1.2, 8), goldMat);
+            pedestal.position.y = 0.7;
+            g.add(pedestal);
 
-            const roof = new THREE.Mesh(
-                new THREE.ConeGeometry(2.9, 3.2, 12),
-                new THREE.MeshStandardMaterial({ color: 0x1e293b })
+            const crystal = new THREE.Mesh(
+                new THREE.OctahedronGeometry(1.15, 0),
+                new THREE.MeshBasicMaterial({ color: roofColor })
             );
-            roof.position.y = 22.6;
-            g.add(roof);
+            crystal.position.y = 3.2;
+            g.add(crystal);
+
+            // Feixe de Luz Vertical visível de longe para orientar o jogador
+            const beamGeo = new THREE.CylinderGeometry(0.25, 0.9, 65, 12, 1, true);
+            const beamMat = new THREE.MeshBasicMaterial({
+                color: roofColor,
+                transparent: true,
+                opacity: 0.16,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            });
+            const beam = new THREE.Mesh(beamGeo, beamMat);
+            beam.position.y = 32.5;
+            g.add(beam);
+            waypointBeacons.push(crystal);
+
+            // 8 Edifícios / Casas / Torres ao redor da praça
+            const houseCount = 8;
+            for (let i = 0; i < houseCount; i++) {
+                const angle = (i / houseCount) * Math.PI * 2 + 0.3;
+                const radius = 18 + (i % 2) * 5;
+                const hx = Math.cos(angle) * radius;
+                const hz = Math.sin(angle) * radius;
+
+                const house = new THREE.Group();
+                house.position.set(hx, 0, hz);
+                house.lookAt(0, 0, 0);
+
+                const w = 4.8 + (i % 3) * 1.2;
+                const h = 4.5 + (i % 2) * 2.5;
+                const d = 4.5;
+
+                const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+                body.position.y = h / 2;
+                body.castShadow = true;
+                body.receiveShadow = true;
+                house.add(body);
+
+                const roof = new THREE.Mesh(new THREE.ConeGeometry(w * 0.78, 3.0, 4), roofMat);
+                roof.position.y = h + 1.5;
+                roof.rotation.y = Math.PI / 4;
+                roof.castShadow = true;
+                house.add(roof);
+
+                // Janela iluminada
+                const win = new THREE.Mesh(
+                    new THREE.PlaneGeometry(1.2, 1.4),
+                    new THREE.MeshBasicMaterial({ color: 0xfef08a })
+                );
+                win.position.set(0, h * 0.55, d / 2 + 0.02);
+                house.add(win);
+
+                g.add(house);
+            }
+
+            // Muralha / Portais de Entrada
+            for (let p = 0; p < 4; p++) {
+                const pa = (p / 4) * Math.PI * 2;
+                const pillarL = new THREE.Mesh(new THREE.BoxGeometry(1.4, 7.5, 1.4), wallMat);
+                pillarL.position.set(Math.cos(pa - 0.12) * 27, 3.75, Math.sin(pa - 0.12) * 27);
+                g.add(pillarL);
+
+                const pillarR = new THREE.Mesh(new THREE.BoxGeometry(1.4, 7.5, 1.4), wallMat);
+                pillarR.position.set(Math.cos(pa + 0.12) * 27, 3.75, Math.sin(pa + 0.12) * 27);
+                g.add(pillarR);
+            }
 
             worldProps.add(g);
         }
-        buildLighthouse(68, -42);
-        buildLighthouse(-138, 72);
 
-        // Docas e Pontes de Madeira conectando as Ilhas
-        function buildDock(x, z, rotY, length = 18) {
-            const g = new THREE.Group();
-            g.position.set(x, WATER_LEVEL + 0.55, z);
-            g.rotation.y = rotY;
-            const woodMat = new THREE.MeshStandardMaterial({ color: 0x6e472b, roughness: 0.85 });
+        WORLD_CITIES.forEach(city => buildCityArchitecture(city));
 
-            const planks = Math.floor(length / 1.5);
-            for (let i = 0; i < planks; i++) {
-                const plank = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.22, 1.3), woodMat);
-                plank.position.set(0, 0, i * 1.5 - length * 0.5);
-                plank.castShadow = true;
-                plank.receiveShadow = true;
-                g.add(plank);
-            }
-            for (let side of [-1.6, 1.6]) {
-                for (let pz = -length * 0.45; pz <= length * 0.45; pz += 4.5) {
-                    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 3.2, 8), woodMat);
-                    post.position.set(side, -0.8, pz);
-                    g.add(post);
-                }
-            }
-            worldProps.add(g);
-        }
-        buildDock(48, 38, Math.PI * 0.25, 22);
-        buildDock(-62, -28, -Math.PI * 0.35, 22);
-        // Pontes conectando ilhas principais
-        buildDock(88, -18, Math.PI * 0.42, 48);
-        buildDock(-82, 46, -Math.PI * 0.32, 48);
-        buildDock(-12, -88, 0.12, 44);
-        buildDock(18, 82, -0.15, 44);
-
-        // Árvores e Rochas
+        // Árvores e Rochas espalhadas longe das cidades
         const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c3c24, roughness: 0.9 });
         const leafMat = new THREE.MeshStandardMaterial({ color: 0x3b8c4e, roughness: 0.75 });
         const rockMat = new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.92 });
 
-        for (let i = 0; i < 110; i++) {
-            const tx = (Math.random() - 0.5) * 420;
-            const tz = (Math.random() - 0.5) * 420;
+        for (let i = 0; i < 240; i++) {
+            const tx = (Math.random() - 0.5) * 1450;
+            const tz = (Math.random() - 0.5) * 1450;
+            if (WORLD_CITIES.some(c => Math.hypot(tx - c.x, tz - c.z) < 42)) continue;
             const ty = getTerrainHeight(tx, tz);
-            if (ty > 2.0 && ty < 12.0 && Math.hypot(tx, tz - 32) > 14) {
+            if (ty > 2.0 && ty < 14.0) {
                 const tree = new THREE.Group();
                 tree.position.set(tx, ty, tz);
-                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.5, 3.6, 7), trunkMat);
-                trunk.position.y = 1.8;
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.55, 4.2, 7), trunkMat);
+                trunk.position.y = 2.1;
                 trunk.castShadow = true;
                 tree.add(trunk);
 
                 for (let c = 0; c < 3; c++) {
-                    const crown = new THREE.Mesh(new THREE.DodecahedronGeometry(1.9 - c * 0.35, 1), leafMat);
-                    crown.position.set((Math.random()-0.5)*0.6, 3.8 + c * 1.1, (Math.random()-0.5)*0.6);
+                    const crown = new THREE.Mesh(new THREE.DodecahedronGeometry(2.1 - c * 0.35, 1), leafMat);
+                    crown.position.set((Math.random()-0.5)*0.6, 4.2 + c * 1.2, (Math.random()-0.5)*0.6);
                     crown.castShadow = true;
                     tree.add(crown);
                 }
-                const s = 0.85 + Math.random() * 0.65;
+                const s = 0.9 + Math.random() * 0.8;
                 tree.scale.set(s, s, s);
                 worldProps.add(tree);
             }
         }
 
-        for (let i = 0; i < 75; i++) {
-            const rx = (Math.random() - 0.5) * 450;
-            const rz = (Math.random() - 0.5) * 450;
+        for (let i = 0; i < 160; i++) {
+            const rx = (Math.random() - 0.5) * 1500;
+            const rz = (Math.random() - 0.5) * 1500;
+            if (WORLD_CITIES.some(c => Math.hypot(rx - c.x, rz - c.z) < 38)) continue;
             const ry = getTerrainHeight(rx, rz);
-            if (ry > -0.5) {
-                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2 + Math.random() * 2.2, 0), rockMat);
-                rock.position.set(rx, ry + 0.4, rz);
+            if (ry > 0.2) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.4 + Math.random() * 2.6, 0), rockMat);
+                rock.position.set(rx, ry + 0.5, rz);
                 rock.rotation.set(Math.random()*3, Math.random()*3, 0);
                 rock.castShadow = true;
-                rock.receiveShadow = true;
                 worldProps.add(rock);
             }
         }
 
         /* =========================================================================
-           5. MODELO 3D DO PERSONAGEM CUSTOMIZÁVEL EM TEMPO REAL
+           5. MODELO 3D ESTILO ANIME (REFERÊNCIA IMAGE_7EF860.PNG — HOMEM & MULHER)
         ========================================================================= */
-        function createAnimeFaceTexture(eyeHex = '#38bdf8', skinHex = '#ffe8d8') {
+        function createAnimeFaceTexture(eyeHex = '#38bdf8', skinHex = '#ffe8d8', isFemale = false) {
             const canvas = document.createElement('canvas');
             canvas.width = 512;
             canvas.height = 512;
             const ctx = canvas.getContext('2d');
 
-            // Pele base
             ctx.fillStyle = skinHex;
             ctx.fillRect(0, 0, 512, 512);
 
-            // Rubor suave
-            const blushGradL = ctx.createRadialGradient(168, 305, 5, 168, 305, 42);
-            blushGradL.addColorStop(0, 'rgba(244, 114, 138, 0.38)');
+            // Rubor sutil estilo anime
+            const blushAlpha = isFemale ? 0.42 : 0.22;
+            const blushGradL = ctx.createRadialGradient(168, 305, 5, 168, 305, 40);
+            blushGradL.addColorStop(0, `rgba(244, 114, 138, ${blushAlpha})`);
             blushGradL.addColorStop(1, 'rgba(244, 114, 138, 0)');
             ctx.fillStyle = blushGradL;
             ctx.fillRect(110, 260, 120, 90);
 
-            const blushGradR = ctx.createRadialGradient(344, 305, 5, 344, 305, 42);
-            blushGradR.addColorStop(0, 'rgba(244, 114, 138, 0.38)');
+            const blushGradR = ctx.createRadialGradient(344, 305, 5, 344, 305, 40);
+            blushGradR.addColorStop(0, `rgba(244, 114, 138, ${blushAlpha})`);
             blushGradR.addColorStop(1, 'rgba(244, 114, 138, 0)');
             ctx.fillStyle = blushGradR;
             ctx.fillRect(280, 260, 120, 90);
 
-            // Olhos Expressivos com Cor Customizada
             function drawAnimeEye(cx, cy, flip = 1) {
                 ctx.save();
                 ctx.translate(cx, cy);
                 ctx.scale(flip, 1);
 
+                const eyeH = isFemale ? 27 : 23;
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
-                ctx.ellipse(0, 0, 36, 26, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, 0, 36, eyeH, 0, 0, Math.PI * 2);
                 ctx.fill();
 
                 const irisGrad = ctx.createLinearGradient(0, -22, 0, 22);
@@ -1249,14 +1409,15 @@
                 irisGrad.addColorStop(1, '#ffffff');
                 ctx.fillStyle = irisGrad;
                 ctx.beginPath();
-                ctx.ellipse(2, 2, 21, 23, 0, 0, Math.PI * 2);
+                ctx.ellipse(2, 2, 20, eyeH - 2, 0, 0, Math.PI * 2);
                 ctx.fill();
 
                 ctx.fillStyle = '#090d16';
                 ctx.beginPath();
-                ctx.ellipse(2, 2, 9, 11, 0, 0, Math.PI * 2);
+                ctx.ellipse(2, 2, 8.5, 10, 0, 0, Math.PI * 2);
                 ctx.fill();
 
+                // Brilhos característicos de anime
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
                 ctx.arc(-8, -8, 6.5, 0, Math.PI * 2);
@@ -1265,19 +1426,21 @@
                 ctx.arc(9, 7, 3.2, 0, Math.PI * 2);
                 ctx.fill();
 
-                ctx.strokeStyle = '#1e1b2e';
-                ctx.lineWidth = 6.5;
+                // Cílios superiores marcantes
+                ctx.strokeStyle = '#18181b';
+                ctx.lineWidth = isFemale ? 7.5 : 6.2;
                 ctx.lineCap = 'round';
                 ctx.beginPath();
-                ctx.moveTo(-38, -8);
-                ctx.quadraticCurveTo(0, -32, 40, -10);
+                ctx.moveTo(-38, -6);
+                ctx.quadraticCurveTo(0, -30, 40, -8);
                 ctx.stroke();
 
+                // Sobrancelha expressiva
                 ctx.strokeStyle = '#334155';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 3.2;
                 ctx.beginPath();
-                ctx.moveTo(-18, -36);
-                ctx.quadraticCurveTo(4, -44, 32, -34);
+                ctx.moveTo(-20, -35);
+                ctx.quadraticCurveTo(4, -42, 34, -32);
                 ctx.stroke();
 
                 ctx.restore();
@@ -1286,17 +1449,19 @@
             drawAnimeEye(178, 250, 1);
             drawAnimeEye(334, 250, -1);
 
-            ctx.fillStyle = 'rgba(210, 145, 115, 0.55)';
+            // Nariz delicada
+            ctx.fillStyle = 'rgba(180, 120, 95, 0.5)';
             ctx.beginPath();
-            ctx.arc(256, 302, 3.5, 0, Math.PI * 2);
+            ctx.arc(256, 302, 3.2, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.strokeStyle = '#b95c68';
-            ctx.lineWidth = 3.5;
+            // Boca anime
+            ctx.strokeStyle = isFemale ? '#c05668' : '#9f5862';
+            ctx.lineWidth = 3.2;
             ctx.lineCap = 'round';
             ctx.beginPath();
-            ctx.moveTo(240, 348);
-            ctx.quadraticCurveTo(256, 357, 272, 348);
+            ctx.moveTo(242, 348);
+            ctx.quadraticCurveTo(256, isFemale ? 356 : 352, 270, 348);
             ctx.stroke();
 
             const tex = new THREE.CanvasTexture(canvas);
@@ -1304,154 +1469,191 @@
             return tex;
         }
 
-        function createAnimeResonatorModel() {
+        function createAnimeResonatorModel(overrideCfg = null) {
+            const cfg = overrideCfg || characterConfig;
+            const isFemale = cfg.gender === 'female';
             const root = new THREE.Group();
 
-            // Materiais Dinâmicos (atualizados pela customização)
-            const skinMat = new THREE.MeshStandardMaterial({ color: characterConfig.skinColor, roughness: 0.48 });
+            const skinMat = new THREE.MeshStandardMaterial({ color: cfg.skinColor, roughness: 0.48 });
             const faceMat = new THREE.MeshStandardMaterial({
-                map: createAnimeFaceTexture(characterConfig.eyeColor, characterConfig.skinColor),
+                map: createAnimeFaceTexture(cfg.eyeColor, cfg.skinColor, isFemale),
                 roughness: 0.45
             });
-            const hairMat = new THREE.MeshStandardMaterial({ color: characterConfig.hairColor, roughness: 0.35, metalness: 0.1 });
-            const dressMainMat = new THREE.MeshStandardMaterial({ color: characterConfig.outfitColor, roughness: 0.42, metalness: 0.15 });
-            const dressWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.35 });
-            const goldTrimMat = new THREE.MeshStandardMaterial({ color: 0xe6c675, roughness: 0.25, metalness: 0.85 });
-            const darkBootMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.45 });
+            const hairMat = new THREE.MeshStandardMaterial({ color: cfg.hairColor, roughness: 0.35, metalness: 0.1 });
+            const coatMainMat = new THREE.MeshStandardMaterial({ color: cfg.outfitColor, roughness: 0.42, metalness: 0.15 });
+            const whiteCoatMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.35 });
+            const goldTrimMat = new THREE.MeshStandardMaterial({ color: 0xe6c675, roughness: 0.24, metalness: 0.88 });
+            const darkBootMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.42 });
 
-            // 1. PÉLVIS / QUADRIL
+            // 1. QUADRIL / CINTURA
             const hips = new THREE.Group();
             hips.position.y = 1.02;
             root.add(hips);
 
-            const pelvisMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.19, 0.18, 16), dressMainMat);
+            const hipW = isFemale ? 0.165 : 0.155;
+            const pelvisMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.145, hipW, 0.18, 16), darkBootMat);
             hips.add(pelvisMesh);
 
-            // Saia / Túnica Escalonada
+            // Sobretudo Longo Aberto (Inspirado na imagem de referência Albedo/Anime)
             const skirtGroup = new THREE.Group();
-            skirtGroup.position.y = -0.04;
+            skirtGroup.position.y = -0.02;
             hips.add(skirtGroup);
 
-            const innerSkirt = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.42, 0.56, 24, 1, true), dressWhiteMat);
-            innerSkirt.position.y = -0.26;
-            innerSkirt.material.side = THREE.DoubleSide;
-            skirtGroup.add(innerSkirt);
+            // Abas do sobretudo (esquerda, direita e traseira — aberto na frente!)
+            const coatBack = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.18, 0.34, 0.62, 18, 1, true, Math.PI * 0.65, Math.PI * 0.7),
+                whiteCoatMat
+            );
+            coatBack.position.y = -0.28;
+            coatBack.material.side = THREE.DoubleSide;
+            coatBack.castShadow = true;
+            skirtGroup.add(coatBack);
 
-            const outerSkirt = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.38, 0.48, 24, 1, true), dressMainMat);
-            outerSkirt.position.y = -0.22;
-            outerSkirt.material.side = THREE.DoubleSide;
-            outerSkirt.castShadow = true;
-            skirtGroup.add(outerSkirt);
+            const coatFlapL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.56, 0.03), whiteCoatMat);
+            coatFlapL.position.set(-0.14, -0.26, 0.12);
+            coatFlapL.rotation.set(-0.08, 0.35, -0.12);
+            skirtGroup.add(coatFlapL);
 
-            const waistBelt = new THREE.Mesh(new THREE.TorusGeometry(0.175, 0.022, 10, 24), goldTrimMat);
+            const coatFlapR = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.56, 0.03), whiteCoatMat);
+            coatFlapR.position.set(0.14, -0.26, 0.12);
+            coatFlapR.rotation.set(-0.08, -0.35, 0.12);
+            skirtGroup.add(coatFlapR);
+
+            // Cinto Dourado com Corrente Ornamental
+            const waistBelt = new THREE.Mesh(new THREE.TorusGeometry(0.165, 0.02, 10, 24), goldTrimMat);
             waistBelt.rotation.x = Math.PI / 2;
-            waistBelt.position.y = 0.05;
+            waistBelt.position.y = 0.06;
             hips.add(waistBelt);
 
-            // 2. TORSO
+            // 2. TORSO (Colete Azul/Custom + Casaco Branco + Gola Alta Dourada)
             const torso = new THREE.Group();
             torso.position.y = 0.1;
             hips.add(torso);
 
-            const chestMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.15, 0.44, 16), dressMainMat);
-            chestMesh.position.y = 0.22;
-            chestMesh.castShadow = true;
-            torso.add(chestMesh);
+            const chestTop = isFemale ? 0.175 : 0.205;
+            const chestBot = isFemale ? 0.135 : 0.155;
+            const vestMesh = new THREE.Mesh(new THREE.CylinderGeometry(chestTop, chestBot, 0.45, 16), coatMainMat);
+            vestMesh.position.y = 0.225;
+            vestMesh.castShadow = true;
+            torso.add(vestMesh);
 
-            const collar = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.16, 16), dressWhiteMat);
-            collar.position.y = 0.42;
-            collar.rotation.x = Math.PI;
-            torso.add(collar);
-
-            const gem = new THREE.Mesh(
-                new THREE.OctahedronGeometry(0.048, 0),
-                new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+            // Ombreiras do Casaco Branco
+            const jacketBack = new THREE.Mesh(
+                new THREE.CylinderGeometry(chestTop + 0.015, chestBot + 0.015, 0.44, 16, 1, true, Math.PI * 0.55, Math.PI * 0.9),
+                whiteCoatMat
             );
-            gem.position.set(0, 0.36, 0.18);
-            torso.add(gem);
+            jacketBack.position.y = 0.225;
+            jacketBack.material.side = THREE.DoubleSide;
+            torso.add(jacketBack);
 
-            // Capa / Manto Traseiro
-            const cape = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.68, 0.03), dressMainMat);
-            cape.position.set(0, 0.05, -0.21);
-            cape.rotation.x = 0.14;
-            cape.castShadow = true;
-            torso.add(cape);
+            // Gola Alta Estilo Anime (Referência visual)
+            const highCollar = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.16, 0.13, 0.13, 16, 1, true),
+                darkBootMat
+            );
+            highCollar.position.y = 0.45;
+            highCollar.material.side = THREE.DoubleSide;
+            torso.add(highCollar);
+
+            const collarGoldTrim = new THREE.Mesh(new THREE.TorusGeometry(0.158, 0.012, 8, 20), goldTrimMat);
+            collarGoldTrim.rotation.x = Math.PI / 2;
+            collarGoldTrim.position.y = 0.51;
+            torso.add(collarGoldTrim);
+
+            // Broche Estelar Dourado no Peito (como na imagem de referência!)
+            const starBrooch = new THREE.Mesh(new THREE.OctahedronGeometry(0.055, 0), goldTrimMat);
+            starBrooch.position.set(0, 0.37, chestTop + 0.01);
+            starBrooch.scale.set(1.1, 1.1, 0.4);
+            torso.add(starBrooch);
 
             // 3. PESCOÇO & CABEÇA ANIME
             const headGroup = new THREE.Group();
             headGroup.position.y = 0.48;
             torso.add(headGroup);
 
-            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.075, 0.12, 12), skinMat);
+            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.12, 12), skinMat);
             neck.position.y = 0.04;
             headGroup.add(neck);
 
-            const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.235, 28, 28), faceMat);
+            const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.23, 28, 28), faceMat);
             headSphere.position.y = 0.25;
             headSphere.rotation.y = -Math.PI / 2;
-            headSphere.scale.set(0.96, 1.04, 0.94);
+            headSphere.scale.set(0.95, 1.04, 0.92);
             headSphere.castShadow = true;
             headGroup.add(headSphere);
 
-            // Cabelo Base + Franja
+            // Capacete de Cabelo Volumoso Anime
             const hairCap = new THREE.Mesh(
-                new THREE.SphereGeometry(0.248, 24, 24, 0, Math.PI * 2, 0, Math.PI * 0.62),
+                new THREE.SphereGeometry(0.246, 24, 24, 0, Math.PI * 2, 0, Math.PI * 0.64),
                 hairMat
             );
             hairCap.position.set(0, 0.265, -0.015);
             hairCap.rotation.x = -0.18;
             headGroup.add(hairCap);
 
+            // Topete / Mechas Superiores Espetadas (estilo anime da imagem)
+            for (let t = -1; t <= 1; t++) {
+                const tuft = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.20, 8), hairMat);
+                tuft.position.set(t * 0.06, 0.48, -0.04);
+                tuft.rotation.set(-0.45, 0, t * -0.35);
+                headGroup.add(tuft);
+            }
+
+            // Franja Frontal e Mechas Laterais que emolduram o rosto
             for (let b = -2; b <= 2; b++) {
-                const bang = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.22, 8), hairMat);
-                bang.position.set(b * 0.052, 0.31, 0.215 - Math.abs(b) * 0.015);
-                bang.rotation.x = 2.85;
+                const bang = new THREE.Mesh(new THREE.ConeGeometry(0.052, 0.23, 8), hairMat);
+                bang.position.set(b * 0.052, 0.31, 0.21 - Math.abs(b) * 0.015);
+                bang.rotation.x = 2.88;
                 bang.rotation.z = b * -0.12;
                 headGroup.add(bang);
             }
+            for (let side of [-1, 1]) {
+                const sideLock = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.42, 8), hairMat);
+                sideLock.position.set(side * 0.205, 0.14, 0.08);
+                sideLock.rotation.z = side * 0.12;
+                headGroup.add(sideLock);
+            }
 
-            // Grupos de Cabelo Traseiro (Alternáveis: Longo, Rabo de Cavalo, Curto)
+            // Grupos de Cabelo Traseiro
             const backHairGroup = new THREE.Group();
-            backHairGroup.position.set(0, 0.28, -0.20);
+            backHairGroup.position.set(0, 0.28, -0.19);
             headGroup.add(backHairGroup);
 
-            const hairLongGroup = new THREE.Group();
+            // [1] Mechas Soltas Médias (Igual à imagem de referência!)
+            const hairLayeredGroup = new THREE.Group();
             for (let s = -2; s <= 2; s++) {
-                const strand = new THREE.Mesh(new THREE.ConeGeometry(0.085, 0.78, 10), hairMat);
-                strand.position.set(s * 0.075, -0.34, -Math.abs(s) * 0.01);
-                strand.rotation.x = 0.14;
+                const strand = new THREE.Mesh(new THREE.ConeGeometry(0.082, 0.48, 10), hairMat);
+                strand.position.set(s * 0.072, -0.18, -Math.abs(s) * 0.01);
+                strand.rotation.set(0.22, 0, s * -0.14);
                 strand.castShadow = true;
-                hairLongGroup.add(strand);
+                hairLayeredGroup.add(strand);
             }
-            backHairGroup.add(hairLongGroup);
+            backHairGroup.add(hairLayeredGroup);
 
+            // [2] Coque / Rabo de Cavalo Alto (Igual ao detalhe preso atrás na imagem!)
             const hairPonytailGroup = new THREE.Group();
             hairPonytailGroup.visible = false;
-            const tieRing = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.018, 8, 16), goldTrimMat);
-            tieRing.position.set(0, 0.05, -0.04);
+            const tieRing = new THREE.Mesh(new THREE.TorusGeometry(0.052, 0.016, 8, 16), goldTrimMat);
+            tieRing.position.set(0, 0.06, -0.04);
             hairPonytailGroup.add(tieRing);
-            const ponytailMain = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.82, 12), hairMat);
-            ponytailMain.position.set(0, -0.32, -0.14);
-            ponytailMain.rotation.x = 0.35;
+            const ponytailMain = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.72, 12), hairMat);
+            ponytailMain.position.set(0, -0.26, -0.14);
+            ponytailMain.rotation.x = 0.38;
             ponytailMain.castShadow = true;
             hairPonytailGroup.add(ponytailMain);
             backHairGroup.add(hairPonytailGroup);
 
-            const hairShortGroup = new THREE.Group();
-            hairShortGroup.visible = false;
+            // [3] Longo Imperial
+            const hairLongGroup = new THREE.Group();
+            hairLongGroup.visible = false;
             for (let s = -2; s <= 2; s++) {
-                const shortLock = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.32, 8), hairMat);
-                shortLock.position.set(s * 0.07, -0.12, 0.02);
-                shortLock.rotation.x = 0.18;
-                hairShortGroup.add(shortLock);
+                const longStrand = new THREE.Mesh(new THREE.ConeGeometry(0.085, 0.85, 10), hairMat);
+                longStrand.position.set(s * 0.075, -0.36, -Math.abs(s) * 0.01);
+                longStrand.rotation.x = 0.14;
+                longStrand.castShadow = true;
+                hairLongGroup.add(longStrand);
             }
-            backHairGroup.add(hairShortGroup);
-
-            // Diadema Dourada
-            const circlet = new THREE.Mesh(new THREE.TorusGeometry(0.242, 0.012, 8, 28), goldTrimMat);
-            circlet.position.set(0, 0.36, 0);
-            circlet.rotation.x = Math.PI / 2 + 0.15;
-            headGroup.add(circlet);
+            backHairGroup.add(hairLongGroup);
 
             // Planador Astral
             const gliderGroup = new THREE.Group();
@@ -1461,11 +1663,7 @@
 
             const wingGeo = new THREE.BoxGeometry(1.55, 0.04, 0.52);
             const wingMat = new THREE.MeshStandardMaterial({
-                color: 0x38bdf8,
-                emissive: 0x0284c7,
-                emissiveIntensity: 0.65,
-                transparent: true,
-                opacity: 0.88
+                color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.65, transparent: true, opacity: 0.88
             });
             const leftWing = new THREE.Mesh(wingGeo, wingMat);
             leftWing.position.set(-0.85, 0.1, 0);
@@ -1477,17 +1675,18 @@
             rightWing.rotation.z = -0.18;
             gliderGroup.add(rightWing);
 
-            // 4. BRAÇOS ARTICULADOS
+            // 4. BRAÇOS ARTICULADOS COM OMBREIRAS DOURADAS E LUVAS
             function createArm(isLeft) {
                 const side = isLeft ? -1 : 1;
                 const shoulder = new THREE.Group();
-                shoulder.position.set(side * 0.24, 0.38, 0);
+                shoulder.position.set(side * (chestTop + 0.045), 0.39, 0);
                 torso.add(shoulder);
 
-                const shoulderPad = new THREE.Mesh(new THREE.SphereGeometry(0.072, 12, 12), dressWhiteMat);
-                shoulder.add(shoulderPad);
+                const shoulderArmor = new THREE.Mesh(new THREE.SphereGeometry(0.078, 12, 12), goldTrimMat);
+                shoulderArmor.scale.set(1.1, 0.85, 1.1);
+                shoulder.add(shoulderArmor);
 
-                const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.042, 0.32, 10), skinMat);
+                const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.042, 0.32, 10), whiteCoatMat);
                 upperArm.position.y = -0.16;
                 upperArm.castShadow = true;
                 shoulder.add(upperArm);
@@ -1496,12 +1695,13 @@
                 elbow.position.y = -0.32;
                 shoulder.add(elbow);
 
-                const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.036, 0.30, 10), dressWhiteMat);
+                // Luvas longas escuras com detalhe dourado (igual à referência!)
+                const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.036, 0.30, 10), darkBootMat);
                 forearm.position.y = -0.15;
                 forearm.castShadow = true;
                 elbow.add(forearm);
 
-                const hand = new THREE.Mesh(new THREE.SphereGeometry(0.042, 10, 10), skinMat);
+                const hand = new THREE.Mesh(new THREE.SphereGeometry(0.042, 10, 10), darkBootMat);
                 hand.position.y = -0.31;
                 elbow.add(hand);
 
@@ -1511,14 +1711,14 @@
             const leftArm = createArm(true);
             const rightArm = createArm(false);
 
-            // 5. PERNAS ARTICULADAS
+            // 5. PERNAS ARTICULADAS COM BOTAS ALTAS DE CAVALEIRO
             function createLeg(isLeft) {
                 const side = isLeft ? -1 : 1;
                 const hipJoint = new THREE.Group();
-                hipJoint.position.set(side * 0.105, -0.05, 0);
+                hipJoint.position.set(side * 0.10, -0.05, 0);
                 hips.add(hipJoint);
 
-                const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.072, 0.056, 0.46, 12), skinMat);
+                const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.072, 0.056, 0.46, 12), isFemale ? skinMat : darkBootMat);
                 thigh.position.y = -0.23;
                 thigh.castShadow = true;
                 hipJoint.add(thigh);
@@ -1527,15 +1727,14 @@
                 knee.position.y = -0.46;
                 hipJoint.add(knee);
 
-                const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.054, 0.042, 0.48, 12), darkBootMat);
+                const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.056, 0.042, 0.48, 12), darkBootMat);
                 shin.position.y = -0.24;
                 shin.castShadow = true;
                 knee.add(shin);
 
-                const bootRim = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.012, 8, 16), goldTrimMat);
-                bootRim.rotation.x = Math.PI / 2;
-                bootRim.position.y = -0.04;
-                knee.add(bootRim);
+                const kneeGuard = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.10, 0.04), goldTrimMat);
+                kneeGuard.position.set(0, -0.03, 0.05);
+                knee.add(kneeGuard);
 
                 const foot = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.07, 0.21), darkBootMat);
                 foot.position.set(0, -0.48, 0.04);
@@ -1556,10 +1755,10 @@
             // [0] Espada
             const swordGroup = new THREE.Group();
             const blade = new THREE.Mesh(
-                new THREE.BoxGeometry(0.055, 1.38, 0.018),
+                new THREE.BoxGeometry(0.058, 1.42, 0.018),
                 new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9, roughness: 0.15, emissive: 0x38bdf8, emissiveIntensity: 0.25 })
             );
-            blade.position.y = 0.78;
+            blade.position.y = 0.8;
             swordGroup.add(blade);
             const guard = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.045, 0.06), goldTrimMat);
             guard.position.y = 0.1;
@@ -1575,88 +1774,217 @@
             const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.028, 1.75, 10), goldTrimMat);
             pole.position.y = 0.55;
             staffGroup.add(pole);
-            const orb = new THREE.Mesh(
-                new THREE.OctahedronGeometry(0.14, 1),
-                new THREE.MeshBasicMaterial({ color: 0xc084fc })
-            );
+            const orb = new THREE.Mesh(new THREE.OctahedronGeometry(0.14, 1), new THREE.MeshBasicMaterial({ color: 0xc084fc }));
             orb.position.y = 1.52;
             staffGroup.add(orb);
             weaponHolder.add(staffGroup);
 
-            // [2] Pistola Astral
+            // [2] Pistola
             const pistolGroup = new THREE.Group();
             pistolGroup.visible = false;
-            const barrel = new THREE.Mesh(
-                new THREE.BoxGeometry(0.05, 0.34, 0.08),
-                new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.85, roughness: 0.2 })
-            );
+            const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.34, 0.08), darkBootMat);
             barrel.position.set(0, 0.18, 0.06);
             pistolGroup.add(barrel);
             const muzzleGlow = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.32, 0.02), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
             muzzleGlow.position.set(0, 0.18, 0.105);
             pistolGroup.add(muzzleGlow);
-            const grip = new THREE.Mesh(new THREE.BoxGeometry(0.048, 0.14, 0.06), goldTrimMat);
-            grip.position.set(0, 0.02, -0.01);
-            grip.rotation.x = -0.35;
-            pistolGroup.add(grip);
             weaponHolder.add(pistolGroup);
 
-            // [3] Arco Longo
+            // [3] Arco
             const bowGroup = new THREE.Group();
             bowGroup.visible = false;
             const bowArc = new THREE.Mesh(new THREE.TorusGeometry(0.68, 0.025, 8, 24, Math.PI * 1.15), goldTrimMat);
             bowArc.rotation.z = -Math.PI * 0.075;
             bowArc.position.set(0, 0.15, 0.12);
             bowGroup.add(bowArc);
-            const bowString = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 1.32, 6), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
-            bowString.position.set(0, 0.15, -0.22);
-            bowGroup.add(bowString);
             weaponHolder.add(bowGroup);
+
+            // Aplicar estilo de cabelo inicial
+            hairLayeredGroup.visible = cfg.hairStyle === 'layered';
+            hairPonytailGroup.visible = cfg.hairStyle === 'ponytail';
+            hairLongGroup.visible = cfg.hairStyle === 'long';
 
             return {
                 root, hips, torso, headGroup, backHairGroup, skirtGroup, gliderGroup,
-                hairLongGroup, hairPonytailGroup, hairShortGroup,
-                materials: { skinMat, faceMat, hairMat, dressMainMat },
+                hairLayeredGroup, hairPonytailGroup, hairLongGroup,
+                materials: { skinMat, faceMat, hairMat, coatMainMat },
                 leftArm, rightArm, leftLeg, rightLeg,
                 weapons: [swordGroup, staffGroup, pistolGroup, bowGroup]
             };
         }
 
-        const playerModel = createAnimeResonatorModel();
+        let playerModel = createAnimeResonatorModel(characterConfig);
         scene.add(playerModel.root);
 
-        // Atualiza a aparência 3D do personagem instantaneamente
-        function applyCharacterAppearance() {
-            const m = playerModel.materials;
-            m.hairMat.color.set(characterConfig.hairColor);
-            m.skinMat.color.set(characterConfig.skinColor);
-            m.dressMainMat.color.set(characterConfig.outfitColor);
-
-            if (m.faceMat.map) m.faceMat.map.dispose();
-            m.faceMat.map = createAnimeFaceTexture(characterConfig.eyeColor, characterConfig.skinColor);
-            m.faceMat.needsUpdate = true;
-
-            playerModel.hairLongGroup.visible = characterConfig.hairStyle === 'long';
-            playerModel.hairPonytailGroup.visible = characterConfig.hairStyle === 'ponytail';
-            playerModel.hairShortGroup.visible = characterConfig.hairStyle === 'short';
+        function rebuildPlayerModel(cfg = characterConfig) {
+            const oldPos = playerModel.root.position.clone();
+            const oldRot = playerModel.root.rotation.y;
+            scene.remove(playerModel.root);
+            playerModel = createAnimeResonatorModel(cfg);
+            playerModel.root.position.copy(oldPos);
+            playerModel.root.rotation.y = oldRot;
+            scene.add(playerModel.root);
         }
 
         /* =========================================================================
-           6. ESTADO DO JOGADOR, ATRIBUTOS RPG & CONTROLES DE CÂMERA
+           6. EQUIPE DE 3 RESONATORS (WUTHERING WAVES TEAM + INTRO/OUTRO SKILLS)
+        ========================================================================= */
+        let teamMembers = [];
+        let activeTeamIndex = 0;
+        let teamSwapCooldown = 0;
+
+        function buildInitialTeam() {
+            const cls = RPG_CLASSES.find(c => c.id === characterConfig.classId) || RPG_CLASSES[0];
+            teamMembers = [
+                {
+                    name: characterConfig.name,
+                    classId: cls.id,
+                    element: cls.element,
+                    weaponIdx: cls.weaponIdx,
+                    hp: cls.stats.hp,
+                    maxHp: cls.stats.hp,
+                    mp: cls.stats.mp,
+                    maxMp: cls.stats.mp,
+                    forte: 0,
+                    appearance: { ...characterConfig },
+                    introName: 'Entrada Tempestuosa',
+                    outroName: 'Brisa Protetora'
+                },
+                {
+                    name: 'Lyra',
+                    classId: 'gunslinger',
+                    element: 'Glacio',
+                    weaponIdx: 2,
+                    hp: 1180,
+                    maxHp: 1180,
+                    mp: 140,
+                    maxMp: 140,
+                    forte: 50,
+                    appearance: {
+                        name: 'Lyra', gender: 'female', classId: 'gunslinger', hairStyle: 'long',
+                        hairColor: '#38bdf8', eyeColor: '#facc15', skinColor: '#ffe8d8', outfitColor: '#0f172a'
+                    },
+                    introName: 'Rajada Glacial',
+                    outroName: 'Escudo de Geada'
+                },
+                {
+                    name: 'Vesper',
+                    classId: 'berserker',
+                    element: 'Fusion',
+                    weaponIdx: 0,
+                    hp: 1320,
+                    maxHp: 1320,
+                    mp: 110,
+                    maxMp: 110,
+                    forte: 50,
+                    appearance: {
+                        name: 'Vesper', gender: 'male', classId: 'berserker', hairStyle: 'ponytail',
+                        hairColor: '#e11d48', eyeColor: '#facc15', skinColor: '#f5cfa0', outfitColor: '#7f1d1d'
+                    },
+                    introName: 'Impacto Solar',
+                    outroName: 'Chama Persistente'
+                }
+            ];
+            activeTeamIndex = 0;
+            renderTeamPanel();
+        }
+
+        function renderTeamPanel() {
+            const container = document.getElementById('team-slots-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            teamMembers.forEach((m, idx) => {
+                const isActive = idx === activeTeamIndex;
+                const elInfo = ELEMENTS[m.element] || ELEMENTS.Aero;
+                const hpPct = Math.max(0, Math.min(100, (m.hp / m.maxHp) * 100));
+
+                const row = document.createElement('div');
+                row.onclick = () => swapTeamMember(idx);
+                row.className = `p-2 rounded-xl border transition cursor-pointer flex items-center justify-between ${
+                    isActive
+                        ? 'border-amber-400 bg-amber-500/20 shadow-[0_0_12px_rgba(230,198,117,0.2)]'
+                        : 'border-slate-700/70 bg-slate-900/70 hover:border-slate-500'
+                }`;
+
+                row.innerHTML = `
+                    <div class="min-w-0 flex-1 pr-2">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-extrabold ${isActive ? 'text-amber-200' : 'text-white'} truncate">${m.name}</span>
+                            <span class="text-[9px] px-1.5 py-0.2 rounded border ${elInfo.badge} font-bold">${m.element}</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden mt-1">
+                            <div class="h-full bg-emerald-400" style="width:${hpPct}%"></div>
+                        </div>
+                    </div>
+                    <div class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${isActive ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-slate-300'}">
+                        F${idx + 1}
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function swapTeamMember(newIdx) {
+            if (newIdx === activeTeamIndex || !teamMembers[newIdx] || teamSwapCooldown > 0) return;
+
+            // Salvar estado do membro atual (Outro Skill)
+            const outgoing = teamMembers[activeTeamIndex];
+            outgoing.hp = player.hp;
+            outgoing.mp = player.mp;
+            outgoing.forte = player.forte;
+
+            // Ativar novo membro (Intro Skill!)
+            activeTeamIndex = newIdx;
+            const incoming = teamMembers[activeTeamIndex];
+            teamSwapCooldown = 1.0;
+
+            player.hp = incoming.hp;
+            player.maxHp = incoming.maxHp;
+            player.mp = incoming.mp;
+            player.maxMp = incoming.maxMp;
+            player.forte = incoming.forte;
+            player.invulnTimer = 0.65;
+
+            rebuildPlayerModel(incoming.appearance);
+            switchWeapon(incoming.weaponIdx);
+            sfx.playSwap();
+
+            const elInfo = ELEMENTS[incoming.element] || ELEMENTS.Aero;
+            spawnSlashArc(player.pos, player.rotY, elInfo.hex, 2.4);
+            showCombatAlert(`INTRO SKILL: ${incoming.introName.toUpperCase()}!`, 'text-sky-300');
+
+            // Dano de Entrada (Intro Skill) nos inimigos próximos
+            const calc = getCalculatedStats();
+            for (const e of enemies) {
+                if (e.hp > 0 && e.mesh.position.distanceTo(player.pos) < 7.5) {
+                    damageEnemy(e, calc.magicAtk * 1.35, true, true, incoming.element);
+                }
+            }
+
+            document.getElementById('hud-char-name').textContent = incoming.name;
+            const pill = document.getElementById('hud-element-pill');
+            pill.textContent = incoming.element;
+            pill.className = `text-[10px] px-1.5 py-0.5 rounded border font-bold ${elInfo.badge}`;
+            renderTeamPanel();
+        }
+
+        /* =========================================================================
+           7. ESTADO DO JOGADOR, ATRIBUTOS & CONTROLES DE CÂMERA
         ========================================================================= */
         const player = {
-            pos: new THREE.Vector3(0, getTerrainHeight(0, 32), 32),
+            pos: new THREE.Vector3(0, getTerrainHeight(0, 80), 80),
             vel: new THREE.Vector3(),
             rotY: Math.PI,
-            speed: 11.5,
-            sprintSpeed: 18.5,
-            jumpForce: 15.5,
+            speed: 12.5,
+            sprintSpeed: 21.0,
+            jumpForce: 16.0,
             grounded: true,
             gliding: false,
             hp: 1350,
             maxHp: 1350,
-            mp: 90,
-            maxMp: 90,
+            mp: 100,
+            maxMp: 100,
             stamina: 100,
             maxStamina: 100,
             forte: 0,
@@ -1664,7 +1992,7 @@
             xp: 0,
             nextXp: 100,
             attrPoints: 0,
-            stats: { vit: 12, str: 17, def: 16, int: 7, agi: 10 },
+            stats: { vit: 12, str: 17, def: 16, int: 10, agi: 12 },
             weaponIdx: 0,
             comboStep: 0,
             comboTimer: 0,
@@ -1697,39 +2025,36 @@
             if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
             keys[e.code] = true;
             if (!gameStarted) return;
+
+            if (e.code === 'KeyM') { e.preventDefault(); toggleWorldMap(); return; }
+            if (e.code === 'KeyC') { toggleCharacterSheet(); return; }
+            if (e.code === 'F1') { e.preventDefault(); swapTeamMember(0); return; }
+            if (e.code === 'F2') { e.preventDefault(); swapTeamMember(1); return; }
+            if (e.code === 'F3') { e.preventDefault(); swapTeamMember(2); return; }
+
             if (e.code === 'Digit1') switchWeapon(0);
             if (e.code === 'Digit2') switchWeapon(1);
             if (e.code === 'Digit3') switchWeapon(2);
             if (e.code === 'Digit4') switchWeapon(3);
             if (e.code === 'KeyE') triggerSkillE();
             if (e.code === 'KeyR') triggerSkillR();
-            if (e.code === 'KeyC') toggleCharacterSheet();
             if (e.code === 'KeyV') toggleAimMode();
             if (e.code === 'Space') handleJumpOrGlide();
             if (e.code === 'ControlLeft' || e.code === 'ShiftRight') triggerDodge();
         });
-        window.addEventListener('keyup', (e) => {
-            keys[e.code] = false;
-        });
+        window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-        // Pointer Lock & Rotação da Câmera / Preview 3D
         let isPointerLocked = false;
         const btnLock = document.getElementById('btn-lock-mouse');
-        btnLock.addEventListener('click', () => {
-            renderer.domElement.requestPointerLock();
-        });
+        btnLock.addEventListener('click', () => renderer.domElement.requestPointerLock());
 
         document.addEventListener('pointerlockchange', () => {
             isPointerLocked = document.pointerLockElement === renderer.domElement;
             document.getElementById('lock-label').textContent = isPointerLocked ? 'Câmera Travada [ESC]' : 'Travar Câmera [Click]';
         });
 
-        // Arrastar para girar o personagem na tela inicial
         const previewDragZone = document.getElementById('preview-drag-zone');
-        previewDragZone.addEventListener('mousedown', (e) => {
-            isDraggingPreview = true;
-            lastPreviewX = e.clientX;
-        });
+        previewDragZone.addEventListener('mousedown', (e) => { isDraggingPreview = true; lastPreviewX = e.clientX; });
         window.addEventListener('mouseup', () => { isDraggingPreview = false; });
 
         window.addEventListener('mousemove', (e) => {
@@ -1742,7 +2067,7 @@
                 return;
             }
             if (isPointerLocked) {
-                const sens = player.isAiming ? 0.0014 : 0.0024;
+                const sens = (player.isAiming ? 0.0014 : 0.0024) * gameSettings.sensitivity;
                 camYaw -= e.movementX * sens;
                 camPitch = Math.max(-0.35, Math.min(1.15, camPitch + e.movementY * sens));
             }
@@ -1752,27 +2077,25 @@
 
         renderer.domElement.addEventListener('mousedown', (e) => {
             if (!gameStarted) return;
-            if (!isPointerLocked && document.getElementById('char-sheet-modal').classList.contains('hidden')) {
+            const anyModalOpen = !document.getElementById('char-sheet-modal').classList.contains('hidden') ||
+                                 !document.getElementById('world-map-modal').classList.contains('hidden') ||
+                                 !document.getElementById('settings-modal').classList.contains('hidden');
+            if (!isPointerLocked && !anyModalOpen) {
                 renderer.domElement.requestPointerLock();
             }
             if (e.button === 0) performAttack();
             if (e.button === 2) {
-                if (player.weaponIdx === 2 || player.weaponIdx === 3) {
-                    setAimMode(true);
-                } else {
-                    triggerDodge();
-                }
+                if (player.weaponIdx === 2 || player.weaponIdx === 3) setAimMode(true);
+                else triggerDodge();
             }
         });
 
         window.addEventListener('mouseup', (e) => {
-            if (e.button === 2 && player.isAiming) {
-                setAimMode(false);
-            }
+            if (e.button === 2 && player.isAiming) setAimMode(false);
         });
 
         /* =========================================================================
-           7. MIRA PRECISA TPS & RAYCASTER (BUG CORRIGIDO)
+           8. MIRA PRECISA TPS & RAYCASTER
         ========================================================================= */
         const aimRaycaster = new THREE.Raycaster();
         let currentAimTarget = null;
@@ -1798,9 +2121,7 @@
             }
         }
 
-        function toggleAimMode() {
-            setAimMode(!player.isAiming);
-        }
+        function toggleAimMode() { setAimMode(!player.isAiming); }
 
         function updateAimRaycaster() {
             aimRaycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
@@ -1832,7 +2153,6 @@
                     return;
                 }
             }
-
             currentAimTarget = null;
             if (player.isAiming) {
                 innerRing.setAttribute('stroke', '#38bdf8');
@@ -1845,7 +2165,7 @@
         }
 
         /* =========================================================================
-           8. INIMIGOS, IA COM ANEL DE PARRY & CHEFE MUNDIAL
+           9. INIMIGOS REBALANCEADOS E ESPAÇADOS PELO MUNDO GIGANTE
         ========================================================================= */
         const enemies = [];
         const projectiles = [];
@@ -1853,13 +2173,17 @@
         const enemyBarsLayer = document.getElementById('enemy-bars-layer');
 
         function createEnemy(type, x, z, isBoss = false) {
+            // Nunca criar inimigos dentro das zonas seguras das 10 cidades!
+            if (WORLD_CITIES.some(c => Math.hypot(x - c.x, z - c.z) < 88)) return;
+
             const g = new THREE.Group();
             const y = getTerrainHeight(x, z);
+            if (y < 0.4) return;
             g.position.set(x, y, z);
 
             const scale = isBoss ? 2.6 : 1.05;
-            const bodyCol = isBoss ? 0x3b0764 : (type === 'Prism' ? 0x0369a1 : 0x334155);
-            const glowCol = isBoss ? 0xe879f9 : (type === 'Prism' ? 0x38bdf8 : 0xf43f5e);
+            const bodyCol = isBoss ? 0x3b0764 : (type === 'Glacio' ? 0x0369a1 : (type === 'Fusion' ? 0x991b1b : 0x334155));
+            const glowCol = isBoss ? 0xe879f9 : (type === 'Glacio' ? 0x38bdf8 : (type === 'Fusion' ? 0xfb923c : 0xf43f5e));
 
             const core = new THREE.Mesh(
                 new THREE.OctahedronGeometry(0.95 * scale, 1),
@@ -1893,7 +2217,7 @@
             const barEl = document.createElement('div');
             barEl.className = 'absolute -translate-x-1/2 -translate-y-full hidden flex-col items-center w-24';
             barEl.innerHTML = `
-                <div class="text-[9px] font-bold text-white drop-shadow mb-0.5">${isBoss ? 'Tempest Mephis' : type + ' TD'}</div>
+                <div class="text-[9px] font-bold text-white drop-shadow mb-0.5">${isBoss ? type : type + ' TD'}</div>
                 <div class="w-full h-1.5 bg-slate-950/90 rounded-full overflow-hidden border border-white/20">
                     <div class="hp-fill h-full bg-rose-500" style="width:100%"></div>
                 </div>
@@ -1903,10 +2227,10 @@
             `;
             enemyBarsLayer.appendChild(barEl);
 
-            const maxHp = isBoss ? 4800 : 420;
+            const maxHp = isBoss ? 4800 : 380;
             const enemyObj = {
                 mesh: g, core, halo, parryRing, barEl,
-                name: isBoss ? 'Tempest Mephis' : `${type} Tacet Discord`,
+                name: isBoss ? type : `${type} Tacet Discord`,
                 isBoss,
                 hp: maxHp,
                 maxHp,
@@ -1914,7 +2238,7 @@
                 maxVibration: 100,
                 staggerTimer: 0,
                 attackState: 'idle',
-                stateTimer: Math.random() * 2,
+                stateTimer: 1.0 + Math.random() * 1.5,
                 parryWindow: false,
                 homePos: new THREE.Vector3(x, y, z)
             };
@@ -1922,22 +2246,28 @@
             enemies.push(enemyObj);
         }
 
-        createEnemy('Tempest Mephis', 0, -145, true);
-        for (let i = 0; i < 18; i++) {
-            const angle = (i / 18) * Math.PI * 2;
-            const radius = 38 + (i % 4) * 36;
-            const ex = Math.cos(angle) * radius;
-            const ez = Math.sin(angle) * radius;
-            if (getTerrainHeight(ex, ez) > 0.8) {
-                createEnemy(i % 2 === 0 ? 'Havoc' : 'Prism', ex, ez, false);
-            }
+        // Chefes Mundiais em regiões distintas
+        createEnemy('Tempest Mephis', -140, -140, true);
+        createEnemy('Inferno Rider', 560, -260, true);
+        createEnemy('Lampylumen Myriad', -190, -520, true);
+
+        // Patrulhas bem espaçadas pelo continente (distância mínima garantida)
+        const placedCoords = [];
+        const typesList = ['Havoc', 'Glacio', 'Fusion'];
+        for (let i = 0; i < 42; i++) {
+            const ex = (Math.random() - 0.5) * 1350;
+            const ez = (Math.random() - 0.5) * 1350;
+            if (placedCoords.some(p => Math.hypot(ex - p.x, ez - p.z) < 75)) continue;
+            placedCoords.push({ x: ex, z: ez });
+            createEnemy(typesList[i % 3], ex, ez, false);
         }
 
         /* =========================================================================
-           9. COMBATE, ATRIBUTOS CALCULADOS, HABILIDADES E PARRY
+           10. COMBATE, FORTE CIRCUIT, HABILIDADES E PARRY
         ========================================================================= */
         function getCalculatedStats() {
-            const cls = RPG_CLASSES.find(c => c.id === characterConfig.classId) || RPG_CLASSES[0];
+            const activeMember = teamMembers[activeTeamIndex] || { classId: characterConfig.classId };
+            const cls = RPG_CLASSES.find(c => c.id === activeMember.classId) || RPG_CLASSES[0];
             let strBonus = player.stats.str;
             if (cls.id === 'berserker' && player.hp < player.maxHp * 0.5) strBonus *= 1.3;
 
@@ -1951,6 +2281,7 @@
 
         function switchWeapon(idx) {
             player.weaponIdx = idx;
+            if (teamMembers[activeTeamIndex]) teamMembers[activeTeamIndex].weaponIdx = idx;
             playerModel.weapons.forEach((w, i) => w.visible = (i === idx));
             for (let i = 0; i < 4; i++) {
                 const btn = document.getElementById(`wep-${i}`);
@@ -1967,7 +2298,7 @@
 
         function showCombatAlert(text, colorClass = 'text-amber-300') {
             const box = document.getElementById('combat-alert-box');
-            box.innerHTML = `<div class="parry-banner font-cinzel font-black text-2xl sm:text-3xl tracking-widest ${colorClass} drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)]">${text}</div>`;
+            box.innerHTML = `<div class="parry-banner font-cinzel font-black text-xl sm:text-3xl tracking-widest ${colorClass} drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)]">${text}</div>`;
         }
 
         function spawnDamageNumber(worldPos, amount, isCrit = false, label = '') {
@@ -2013,6 +2344,8 @@
         function performAttack() {
             if (player.attackCooldown > 0) return;
             const calc = getCalculatedStats();
+            const activeM = teamMembers[activeTeamIndex] || { element: 'Aero' };
+            const elColor = (ELEMENTS[activeM.element] || ELEMENTS.Aero).hex;
 
             if (!player.isAiming) {
                 let nearest = null;
@@ -2038,13 +2371,9 @@
             const isBow = player.weaponIdx === 3;
             const isStaff = player.weaponIdx === 1;
 
-            if (isGun) {
-                player.attackCooldown = calc.cls.id === 'gunslinger' ? 0.14 : 0.19;
-            } else if (isBow) {
-                player.attackCooldown = 0.34;
-            } else {
-                player.attackCooldown = 0.26;
-            }
+            if (isGun) player.attackCooldown = calc.cls.id === 'gunslinger' ? 0.14 : 0.19;
+            else if (isBow) player.attackCooldown = 0.34;
+            else player.attackCooldown = 0.26;
 
             if (isGun || isBow) {
                 sfx.playGunshot(isGun);
@@ -2062,8 +2391,7 @@
 
                 const baseRangedDmg = calc.physicalAtk * 0.65 + player.stats.agi * 5;
                 const dmg = isGun ? baseRangedDmg * 0.72 : baseRangedDmg * 1.45;
-                const col = isGun ? 0x38bdf8 : 0xfacc15;
-                spawnProjectile(muzzlePos, shootDir, isGun ? 72 : 62, dmg, col, true, false);
+                spawnProjectile(muzzlePos, shootDir, isGun ? 72 : 62, dmg, elColor, true, false);
                 screenShake = Math.max(screenShake, isGun ? 0.08 : 0.14);
                 return;
             }
@@ -2074,21 +2402,28 @@
             if (isStaff) {
                 const start = player.pos.clone().add(new THREE.Vector3(0, 1.35, 0)).add(forward.clone().multiplyScalar(0.8));
                 const staffDmg = calc.magicAtk * (1 + player.comboStep * 0.2);
-                spawnProjectile(start, forward, 34, staffDmg, 0xc084fc, false, true);
+                spawnProjectile(start, forward, 34, staffDmg, elColor, false, true);
                 return;
             }
 
-            // Espada (Corpo-a-Corpo + Parry)
-            spawnSlashArc(player.pos, player.rotY, player.comboStep === 3 ? 0xfacc15 : 0x38bdf8, 1.0 + player.comboStep * 0.12);
+            // Forte Circuit: se estiver em 100%, o ataque descarrega um Golpe Pesado Especial!
+            let forteDischarge = false;
+            if (player.forte >= 100) {
+                player.forte = 0;
+                forteDischarge = true;
+                showCombatAlert('FORTE CIRCUIT: LIBERAÇÃO PESADA!', 'text-amber-300');
+                screenShake = 0.4;
+            }
+
+            spawnSlashArc(player.pos, player.rotY, forteDischarge ? 0xfacc15 : elColor, forteDischarge ? 2.2 : (1.0 + player.comboStep * 0.12));
             player.vel.x += forward.x * 7.5;
             player.vel.z += forward.z * 7.5;
 
-            const meleeBase = calc.physicalAtk * (1 + player.comboStep * 0.22);
+            const meleeBase = calc.physicalAtk * (1 + player.comboStep * 0.22) * (forteDischarge ? 2.2 : 1.0);
             for (const e of enemies) {
                 if (e.hp <= 0) continue;
-                const toEnemy = e.mesh.position.clone().sub(player.pos);
-                const dist = toEnemy.length();
-                if (dist < 4.8) {
+                const dist = e.mesh.position.distanceTo(player.pos);
+                if (dist < (forteDischarge ? 6.5 : 4.8)) {
                     if (e.parryWindow) {
                         e.parryWindow = false;
                         e.attackState = 'idle';
@@ -2100,12 +2435,12 @@
                         triggerSlowMo(0.35);
                         showCombatAlert('CONTRA-ATAQUE PARRY!', 'text-yellow-300');
                         damageEnemy(e, meleeBase * 2.1 * parryBonus, true, false);
-                        player.forte = Math.min(100, player.forte + 32);
+                        player.forte = Math.min(100, player.forte + 35);
                     } else {
                         const isCrit = Math.random() < calc.critRate;
                         const finalDmg = isCrit ? meleeBase * calc.critMult : meleeBase;
                         damageEnemy(e, finalDmg, isCrit, false);
-                        player.forte = Math.min(100, player.forte + 14);
+                        if (!forteDischarge) player.forte = Math.min(100, player.forte + 16);
                     }
                 }
             }
@@ -2119,7 +2454,6 @@
             enemy.hp = Math.max(0, enemy.hp - total);
             enemy.vibration = Math.max(0, enemy.vibration - (isCrit ? 18 : 11));
 
-            // Passiva do Necromante: roubo de vida mágico
             if (isMagic && calc.cls.id === 'necromancer') {
                 player.hp = Math.min(player.maxHp, player.hp + total * 0.12);
             }
@@ -2134,15 +2468,14 @@
             if (enemy.hp === 0) {
                 enemy.mesh.visible = false;
                 enemy.barEl.classList.add('hidden');
-                const xpGain = enemy.isBoss ? 350 : 60;
-                gainXP(xpGain);
+                gainXP(enemy.isBoss ? 350 : 65);
                 setTimeout(() => {
                     enemy.hp = enemy.maxHp;
                     enemy.vibration = enemy.maxVibration;
                     enemy.staggerTimer = 0;
                     enemy.mesh.position.copy(enemy.homePos);
                     enemy.mesh.visible = true;
-                }, enemy.isBoss ? 25000 : 12000);
+                }, enemy.isBoss ? 25000 : 14000);
             }
         }
 
@@ -2165,6 +2498,10 @@
             const cls = RPG_CLASSES.find(c => c.id === characterConfig.classId) || RPG_CLASSES[0];
             player.maxHp = cls.stats.hp + (player.stats.vit - cls.stats.vit) * 120 + (player.level - 1) * 80;
             player.maxMp = cls.stats.mp + (player.stats.int - cls.stats.int) * 15 + (player.level - 1) * 10;
+            if (teamMembers[0]) {
+                teamMembers[0].maxHp = player.maxHp;
+                teamMembers[0].maxMp = player.maxMp;
+            }
             if (healFull) {
                 player.hp = player.maxHp;
                 player.mp = player.maxMp;
@@ -2248,7 +2585,7 @@
             sfx.playUltimate();
             screenShake = 0.65;
             triggerSlowMo(0.45);
-            showCombatAlert('LIBERTAÇÃO ASTRAL!', 'text-amber-200');
+            showCombatAlert('LIBERAÇÃO DE RESSONÂNCIA!', 'text-amber-200');
             const calc = getCalculatedStats();
             const ultMult = calc.cls.id === 'mage' ? 1.3 : 1.0;
 
@@ -2269,51 +2606,155 @@
         }
 
         /* =========================================================================
-           10. MULTIPLAYER LOCAL VIA BROADCASTCHANNEL
+           11. MAPA MUNDIAL INTERATIVO [M] & TELETRANSPORTE PARA AS 10 CIDADES
         ========================================================================= */
-        const myUid = 'SL-' + Math.floor(100000 + Math.random() * 900000);
-        const coopChannel = new BroadcastChannel('solis_archipelago_coop_v1');
-        const remotePlayers = {};
+        const worldMapCanvas = document.getElementById('world-map-canvas');
+        const wmCtx = worldMapCanvas.getContext('2d');
 
-        coopChannel.onmessage = (ev) => {
-            const msg = ev.data;
-            if (!msg || msg.uid === myUid) return;
-
-            if (msg.type === 'sync') {
-                if (!remotePlayers[msg.uid]) {
-                    const clone = createAnimeResonatorModel();
-                    scene.add(clone.root);
-                    remotePlayers[msg.uid] = { model: clone, lastSeen: performance.now() };
-                }
-                const rp = remotePlayers[msg.uid];
-                rp.model.root.position.set(msg.x, msg.y, msg.z);
-                rp.model.root.rotation.y = msg.rotY;
-                rp.lastSeen = performance.now();
-                document.getElementById('coop-status').textContent = `Co-op Ativo (${Object.keys(remotePlayers).length + 1} Jogadores)`;
+        function toggleWorldMap() {
+            const modal = document.getElementById('world-map-modal');
+            const isHidden = modal.classList.contains('hidden');
+            if (isHidden) {
+                if (isPointerLocked) document.exitPointerLock();
+                renderWorldMapUI();
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
             }
-        };
+        }
 
-        setInterval(() => {
-            if (!gameStarted) return;
-            coopChannel.postMessage({
-                type: 'sync',
-                uid: myUid,
-                x: player.pos.x,
-                y: player.pos.y,
-                z: player.pos.z,
-                rotY: player.rotY
+        function teleportToCity(cityId) {
+            const city = WORLD_CITIES.find(c => c.id === cityId);
+            if (!city) return;
+            const ty = getTerrainHeight(city.x, city.z);
+            player.pos.set(city.x, ty + 0.5, city.z + 8);
+            player.vel.set(0, 0, 0);
+            player.hp = player.maxHp;
+            player.mp = player.maxMp;
+            playerModel.root.position.copy(player.pos);
+            sfx.playSwap();
+            toggleWorldMap();
+            showCombatAlert(`TELETRANSPORTADO: ${city.name.toUpperCase()}`, 'text-amber-300');
+        }
+
+        function renderWorldMapUI() {
+            const listEl = document.getElementById('cities-list-container');
+            listEl.innerHTML = '';
+
+            WORLD_CITIES.forEach((city, index) => {
+                const dist = Math.round(Math.hypot(player.pos.x - city.x, player.pos.z - city.z));
+                const item = document.createElement('div');
+                item.className = 'p-2.5 rounded-xl bg-slate-900/90 border border-slate-700/70 hover:border-amber-400 transition flex items-center justify-between gap-2';
+                item.innerHTML = `
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full shrink-0" style="background:${city.color}"></span>
+                            <span class="text-xs font-extrabold text-white truncate">${index + 1}. ${city.name}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 truncate">${city.biome} • ${dist}m</div>
+                    </div>
+                    <button onclick="teleportToCity('${city.id}')" class="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-400/40 text-[10px] font-extrabold transition shrink-0 cursor-pointer">
+                        <i class="fa-solid fa-location-arrow mr-1"></i>Ir
+                    </button>
+                `;
+                listEl.appendChild(item);
             });
-            const now = performance.now();
-            for (const id in remotePlayers) {
-                if (now - remotePlayers[id].lastSeen > 4000) {
-                    scene.remove(remotePlayers[id].model.root);
-                    delete remotePlayers[id];
+
+            drawWorldMapCanvas();
+        }
+
+        function drawWorldMapCanvas() {
+            const W = 560, H = 560;
+            const scale = W / 1600; // Mapeia -800..+800 para 0..560
+            const toCanvas = (wx, wz) => ({ cx: W / 2 + wx * scale, cy: H / 2 + wz * scale });
+
+            wmCtx.clearRect(0, 0, W, H);
+            wmCtx.fillStyle = '#071e36';
+            wmCtx.fillRect(0, 0, W, H);
+
+            // Desenhar relevo/continente
+            const step = 12;
+            for (let gx = -800; gx < 800; gx += step) {
+                for (let gz = -800; gz < 800; gz += step) {
+                    const h = getTerrainHeight(gx, gz);
+                    if (h > 0.2) {
+                        const p = toCanvas(gx, gz);
+                        if (gz < -430 && gx < 240) wmCtx.fillStyle = '#cbd5e1';
+                        else if (gx > 300 && gz < -220) wmCtx.fillStyle = '#52525b';
+                        else if (gx > 250 && gz > 220) wmCtx.fillStyle = '#ca8a04';
+                        else wmCtx.fillStyle = h > 11 ? '#65a30d' : '#3f7d44';
+                        wmCtx.fillRect(p.cx, p.cy, step * scale + 1, step * scale + 1);
+                    }
                 }
             }
-        }, 60);
+
+            // Estradas tracejadas conectando as cidades
+            wmCtx.strokeStyle = 'rgba(230, 198, 117, 0.28)';
+            wmCtx.lineWidth = 1.5;
+            wmCtx.setLineDash([4, 4]);
+            wmCtx.beginPath();
+            WORLD_CITIES.forEach((c, idx) => {
+                const p = toCanvas(c.x, c.z);
+                if (idx === 0) wmCtx.moveTo(p.cx, p.cy);
+                else wmCtx.lineTo(p.cx, p.cy);
+            });
+            wmCtx.stroke();
+            wmCtx.setLineDash([]);
+
+            // Ícones de Chefes
+            enemies.filter(e => e.isBoss && e.hp > 0).forEach(b => {
+                const p = toCanvas(b.mesh.position.x, b.mesh.position.z);
+                wmCtx.fillStyle = '#c084fc';
+                wmCtx.beginPath();
+                wmCtx.arc(p.cx, p.cy, 5, 0, Math.PI * 2);
+                wmCtx.fill();
+            });
+
+            // Ícones das 10 Cidades
+            WORLD_CITIES.forEach(city => {
+                const p = toCanvas(city.x, city.z);
+                wmCtx.fillStyle = city.color;
+                wmCtx.beginPath();
+                wmCtx.arc(p.cx, p.cy, 6.5, 0, Math.PI * 2);
+                wmCtx.fill();
+                wmCtx.strokeStyle = '#0f172a';
+                wmCtx.lineWidth = 2;
+                wmCtx.stroke();
+
+                wmCtx.fillStyle = '#ffffff';
+                wmCtx.font = 'bold 10px Plus Jakarta Sans, sans-serif';
+                wmCtx.fillText(city.name, p.cx + 9, p.cy + 3);
+            });
+
+            // Posição do Jogador
+            const pp = toCanvas(player.pos.x, player.pos.z);
+            wmCtx.fillStyle = '#38bdf8';
+            wmCtx.beginPath();
+            wmCtx.arc(pp.cx, pp.cy, 6, 0, Math.PI * 2);
+            wmCtx.fill();
+            wmCtx.strokeStyle = '#ffffff';
+            wmCtx.lineWidth = 2;
+            wmCtx.stroke();
+        }
+
+        worldMapCanvas.addEventListener('click', (e) => {
+            const rect = worldMapCanvas.getBoundingClientRect();
+            const clickX = ((e.clientX - rect.left) / rect.width) * 560;
+            const clickY = ((e.clientY - rect.top) / rect.height) * 560;
+            const scale = 560 / 1600;
+
+            for (const city of WORLD_CITIES) {
+                const cx = 280 + city.x * scale;
+                const cy = 280 + city.z * scale;
+                if (Math.hypot(clickX - cx, clickY - cy) < 18) {
+                    teleportToCity(city.id);
+                    break;
+                }
+            }
+        });
 
         /* =========================================================================
-           11. ANIMAÇÃO HUMANOIDE & LOOP DE ATUALIZAÇÃO (60 FPS)
+           12. ANIMAÇÃO HUMANOIDE & LOOP DE ATUALIZAÇÃO
         ========================================================================= */
         function animateResonator(dt, isMoving, isSprinting) {
             player.animTime += dt * (isMoving ? (isSprinting ? 14 : 9.5) : 2.6);
@@ -2374,9 +2815,28 @@
             if (player.invulnTimer > 0) player.invulnTimer -= dt;
             if (player.skillECooldown > 0) player.skillECooldown -= dt;
             if (player.skillRCooldown > 0) player.skillRCooldown -= dt;
+            if (teamSwapCooldown > 0) teamSwapCooldown -= dt;
 
-            // Regeneração natural de Mana e Stamina
             player.mp = Math.min(player.maxMp, player.mp + dt * 4.5);
+
+            // Verificar se o jogador está dentro de uma das 10 Cidades Seguras
+            const nearestCity = WORLD_CITIES.find(c => Math.hypot(player.pos.x - c.x, player.pos.z - c.z) < 48);
+            const zoneStatusEl = document.getElementById('hud-zone-status');
+            const regionBadgeEl = document.getElementById('hud-region-badge');
+            const safeDot = document.getElementById('hud-safezone-dot');
+
+            if (nearestCity) {
+                player.hp = Math.min(player.maxHp, player.hp + dt * 65); // Regeneração rápida na cidade!
+                zoneStatusEl.innerHTML = `<i class="fa-solid fa-shield-heart mr-1"></i>Zona Segura (${nearestCity.name})`;
+                zoneStatusEl.className = 'text-emerald-300';
+                regionBadgeEl.textContent = `${nearestCity.name} [M]`;
+                safeDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping';
+            } else {
+                zoneStatusEl.innerHTML = `<i class="fa-solid fa-compass mr-1"></i>Mundo Aberto (Exploração)`;
+                zoneStatusEl.className = 'text-amber-300';
+                regionBadgeEl.textContent = `Atlas Solis [M]`;
+                safeDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+            }
 
             let moveX = 0, moveZ = 0;
             if (keys['KeyW'] || keys['ArrowUp']) moveZ -= 1;
@@ -2387,9 +2847,9 @@
             const isMoving = (moveX !== 0 || moveZ !== 0);
             const isSprinting = isMoving && keys['ShiftLeft'] && player.stamina > 5 && !player.isAiming;
 
-            if (isSprinting) player.stamina = Math.max(0, player.stamina - dt * 18);
-            else if (player.gliding) player.stamina = Math.max(0, player.stamina - dt * 9);
-            else player.stamina = Math.min(player.maxStamina, player.stamina + dt * 16);
+            if (isSprinting) player.stamina = Math.max(0, player.stamina - dt * 15);
+            else if (player.gliding) player.stamina = Math.max(0, player.stamina - dt * 8);
+            else player.stamina = Math.min(player.maxStamina, player.stamina + dt * 18);
 
             if (player.gliding && player.stamina <= 1) stopGliding();
 
@@ -2410,15 +2870,10 @@
                 player.vel.z *= Math.pow(0.001, dt);
             }
 
-            if (player.isAiming) {
-                player.rotY = camYaw + Math.PI;
-            }
+            if (player.isAiming) player.rotY = camYaw + Math.PI;
 
-            if (player.gliding) {
-                player.vel.y = Math.max(player.vel.y - 9.8 * dt, -3.2);
-            } else {
-                player.vel.y -= 34.0 * dt;
-            }
+            if (player.gliding) player.vel.y = Math.max(player.vel.y - 9.8 * dt, -3.2);
+            else player.vel.y -= 34.0 * dt;
 
             player.pos.addScaledVector(player.vel, dt);
 
@@ -2435,6 +2890,12 @@
             playerModel.root.position.copy(player.pos);
             playerModel.root.rotation.y = player.rotY;
             animateResonator(dt, isMoving, isSprinting);
+
+            if (teamMembers[activeTeamIndex]) {
+                teamMembers[activeTeamIndex].hp = player.hp;
+                teamMembers[activeTeamIndex].mp = player.mp;
+                teamMembers[activeTeamIndex].forte = player.forte;
+            }
         }
 
         function updateEnemies(dt) {
@@ -2458,20 +2919,22 @@
 
                 if (e.isBoss && dist < 55) activeBoss = e;
 
-                if (dist < 28) {
+                // Raio de detecção equilibrado (16m) para não puxar o mapa inteiro!
+                const aggroRange = e.isBoss ? 32 : 16;
+                if (dist < aggroRange) {
                     e.mesh.lookAt(player.pos.x, e.mesh.position.y, player.pos.z);
 
                     if (e.attackState === 'idle') {
-                        if (dist > (e.isBoss ? 5.2 : 3.2)) {
+                        if (dist > (e.isBoss ? 5.2 : 3.4)) {
                             toPlayer.normalize();
-                            e.mesh.position.x += toPlayer.x * (e.isBoss ? 5.2 : 4.5) * dt;
-                            e.mesh.position.z += toPlayer.z * (e.isBoss ? 5.2 : 4.5) * dt;
+                            e.mesh.position.x += toPlayer.x * (e.isBoss ? 4.8 : 4.0) * dt;
+                            e.mesh.position.z += toPlayer.z * (e.isBoss ? 4.8 : 4.0) * dt;
                             e.mesh.position.y = Math.max(getTerrainHeight(e.mesh.position.x, e.mesh.position.z), WATER_LEVEL + 0.1);
                         } else {
                             e.stateTimer -= dt;
                             if (e.stateTimer <= 0) {
                                 e.attackState = 'windup';
-                                e.stateTimer = 0.85;
+                                e.stateTimer = 0.95;
                                 e.parryWindow = true;
                                 e.parryRing.material.opacity = 0.95;
                             }
@@ -2486,19 +2949,26 @@
                             e.parryWindow = false;
                             e.parryRing.material.opacity = 0;
                             e.parryRing.scale.set(1, 1, 1);
-                            e.stateTimer = 1.9;
+                            e.stateTimer = 2.1;
 
                             if (dist < (e.isBoss ? 6.5 : 4.2) && player.invulnTimer <= 0) {
-                                const rawDmg = e.isBoss ? 185 : 75;
-                                const reducedDmg = Math.max(12, rawDmg * (1 - calc.defenseReduction));
+                                const rawDmg = e.isBoss ? 145 : 55;
+                                const reducedDmg = Math.max(10, rawDmg * (1 - calc.defenseReduction));
                                 player.hp = Math.max(0, player.hp - reducedDmg);
                                 screenShake = 0.32;
                                 spawnDamageNumber(player.pos, reducedDmg, false, '-');
                                 if (player.hp === 0) {
+                                    // Teletransporta de volta para a cidade mais próxima
+                                    let closestCity = WORLD_CITIES[0];
+                                    let minC = Infinity;
+                                    for (const c of WORLD_CITIES) {
+                                        const d = Math.hypot(player.pos.x - c.x, player.pos.z - c.z);
+                                        if (d < minC) { minC = d; closestCity = c; }
+                                    }
                                     player.hp = player.maxHp;
                                     player.mp = player.maxMp;
-                                    player.pos.set(0, getTerrainHeight(0, 32), 32);
-                                    showCombatAlert('RESSONÂNCIA RESTAURADA', 'text-sky-300');
+                                    player.pos.set(closestCity.x, getTerrainHeight(closestCity.x, closestCity.z) + 0.5, closestCity.z + 8);
+                                    showCombatAlert(`RESGATADO EM ${closestCity.name.toUpperCase()}`, 'text-sky-300');
                                 }
                             }
                         }
@@ -2525,6 +2995,7 @@
             const bossHud = document.getElementById('boss-hud');
             if (activeBoss) {
                 bossHud.classList.remove('hidden');
+                document.getElementById('boss-name').textContent = activeBoss.name.toUpperCase();
                 document.getElementById('boss-hp-bar').style.width = `${(activeBoss.hp / activeBoss.maxHp) * 100}%`;
                 document.getElementById('boss-vib-bar').style.width = `${(activeBoss.vibration / activeBoss.maxVibration) * 100}%`;
             } else {
@@ -2547,7 +3018,7 @@
                         const isCrit = Math.random() < calc.critRate;
                         const finalDmg = isCrit ? p.damage * calc.critMult : p.damage;
                         damageEnemy(e, finalDmg, isCrit, p.isMagic);
-                        player.forte = Math.min(100, player.forte + 8);
+                        player.forte = Math.min(100, player.forte + 10);
                         hit = true;
                         break;
                     }
@@ -2573,7 +3044,6 @@
 
         function updateCamera(dt) {
             if (!gameStarted) {
-                // Câmera de Estúdio na Tela Inicial focada no personagem rotativo
                 previewAngle += dt * 0.25;
                 playerModel.root.rotation.y = previewAngle;
                 const studioTarget = player.pos.clone().add(new THREE.Vector3(0, 1.15, 0));
@@ -2584,7 +3054,7 @@
             }
 
             const targetDist = player.isAiming ? 2.65 : 6.2;
-            const targetFov = player.isAiming ? 42 : 58;
+            const targetFov = player.isAiming ? 42 : gameSettings.fov;
             currentCamDist = THREE.MathUtils.lerp(currentCamDist, targetDist, dt * 10);
             currentFov = THREE.MathUtils.lerp(currentFov, targetFov, dt * 10);
 
@@ -2617,7 +3087,7 @@
         }
 
         /* =========================================================================
-           12. MINIMAPA RADAR & ATUALIZAÇÃO DA HUD
+           13. MINIMAPA RADAR & ATUALIZAÇÃO DA HUD
         ========================================================================= */
         const minimapCanvas = document.getElementById('minimap-canvas');
         const mCtx = minimapCanvas.getContext('2d');
@@ -2640,18 +3110,14 @@
             else ptsDot.classList.add('hidden');
 
             const cdE = document.getElementById('cd-skill-e');
-            if (player.skillECooldown > 0) {
-                cdE.classList.remove('hidden');
-                cdE.textContent = player.skillECooldown.toFixed(1);
-            } else cdE.classList.add('hidden');
+            if (player.skillECooldown > 0) { cdE.classList.remove('hidden'); cdE.textContent = player.skillECooldown.toFixed(1); }
+            else cdE.classList.add('hidden');
 
             const cdR = document.getElementById('cd-skill-r');
-            if (player.skillRCooldown > 0) {
-                cdR.classList.remove('hidden');
-                cdR.textContent = player.skillRCooldown.toFixed(1);
-            } else cdR.classList.add('hidden');
+            if (player.skillRCooldown > 0) { cdR.classList.remove('hidden'); cdR.textContent = player.skillRCooldown.toFixed(1); }
+            else cdR.classList.add('hidden');
 
-            // Desenho do Minimapa Radar
+            // Minimapa Radar
             mCtx.clearRect(0, 0, 120, 120);
             mCtx.fillStyle = '#09233d';
             mCtx.fillRect(0, 0, 120, 120);
@@ -2660,14 +3126,27 @@
             mCtx.translate(60, 60);
             mCtx.rotate(camYaw);
 
+            // Cidades no radar
+            for (const c of WORLD_CITIES) {
+                const dx = (c.x - player.pos.x) * 0.14;
+                const dz = (c.z - player.pos.z) * 0.14;
+                if (Math.hypot(dx, dz) < 55) {
+                    mCtx.fillStyle = c.color;
+                    mCtx.beginPath();
+                    mCtx.arc(dx, dz, 3.6, 0, Math.PI * 2);
+                    mCtx.fill();
+                }
+            }
+
+            // Inimigos no radar
             for (const e of enemies) {
                 if (e.hp <= 0) continue;
-                const dx = (e.mesh.position.x - player.pos.x) * 0.45;
-                const dz = (e.mesh.position.z - player.pos.z) * 0.45;
+                const dx = (e.mesh.position.x - player.pos.x) * 0.25;
+                const dz = (e.mesh.position.z - player.pos.z) * 0.25;
                 if (Math.hypot(dx, dz) < 54) {
                     mCtx.fillStyle = e.isBoss ? '#e879f9' : '#f43f5e';
                     mCtx.beginPath();
-                    mCtx.arc(dx, dz, e.isBoss ? 4.2 : 2.5, 0, Math.PI * 2);
+                    mCtx.arc(dx, dz, e.isBoss ? 4.2 : 2.3, 0, Math.PI * 2);
                     mCtx.fill();
                 }
             }
@@ -2678,19 +3157,104 @@
             mCtx.arc(0, 0, 46, -Math.PI * 0.72, -Math.PI * 0.28);
             mCtx.closePath();
             mCtx.fill();
-
             mCtx.restore();
 
             mCtx.fillStyle = '#facc15';
             mCtx.beginPath();
             mCtx.arc(60, 60, 3.8, 0, Math.PI * 2);
             mCtx.fill();
+
+            if (Math.floor(performance.now() / 300) % 2 === 0) renderTeamPanel();
         }
 
         /* =========================================================================
-           13. INTERFACE DE CRIAÇÃO DE PERSONAGEM, FICHA [C] & SAVE LOCALSTORAGE
+           14. CONFIGURAÇÕES, CRIAÇÃO DE PERSONAGEM, FICHA [C] & SAVE
         ========================================================================= */
-        const SAVE_KEY = 'solis_rpg_character_save_v1';
+        const SAVE_KEY = 'solis_wuwa_rpg_save_v2';
+
+        function toggleSettingsModal(show) {
+            const modal = document.getElementById('settings-modal');
+            if (show) {
+                if (isPointerLocked) document.exitPointerLock();
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function applyGraphicsPreset(preset) {
+            gameSettings.graphics = preset;
+            ['low', 'medium', 'high'].forEach(p => {
+                const btn = document.getElementById(`gfx-${p}`);
+                if (p === preset) {
+                    btn.className = 'gfx-btn py-2 rounded-xl border border-amber-400 bg-amber-500/20 text-amber-200 font-bold cursor-pointer';
+                } else {
+                    btn.className = 'gfx-btn py-2 rounded-xl border border-slate-700 bg-slate-900 text-slate-300 font-bold cursor-pointer';
+                }
+            });
+
+            if (preset === 'low') {
+                renderer.setPixelRatio(1);
+                renderer.shadowMap.enabled = false;
+                bloomPass.enabled = false;
+                document.getElementById('cfg-bloom').checked = false;
+            } else if (preset === 'medium') {
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+                renderer.shadowMap.enabled = true;
+                sunLight.shadow.mapSize.set(1024, 1024);
+                bloomPass.enabled = true;
+                document.getElementById('cfg-bloom').checked = true;
+            } else {
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                renderer.shadowMap.enabled = true;
+                sunLight.shadow.mapSize.set(2048, 2048);
+                bloomPass.enabled = true;
+                document.getElementById('cfg-bloom').checked = true;
+            }
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function updateSettingsFromUI() {
+            gameSettings.bloom = document.getElementById('cfg-bloom').checked;
+            bloomPass.enabled = gameSettings.bloom;
+
+            gameSettings.sensitivity = parseFloat(document.getElementById('cfg-sens').value);
+            document.getElementById('cfg-sens-val').textContent = `${gameSettings.sensitivity.toFixed(1)}x`;
+
+            gameSettings.fov = parseInt(document.getElementById('cfg-fov').value, 10);
+            document.getElementById('cfg-fov-val').textContent = `${gameSettings.fov}°`;
+        }
+
+        function resetSavedData() {
+            localStorage.removeItem(SAVE_KEY);
+            location.reload();
+        }
+
+        function setGender(gender) {
+            characterConfig.gender = gender;
+            const btnM = document.getElementById('gender-male');
+            const btnF = document.getElementById('gender-female');
+            if (gender === 'male') {
+                btnM.className = 'py-2 px-3 rounded-xl text-xs font-extrabold border border-amber-400 bg-amber-500/25 text-amber-200 flex items-center justify-center gap-2 transition cursor-pointer';
+                btnF.className = 'py-2 px-3 rounded-xl text-xs font-extrabold border border-slate-700 bg-slate-900/75 text-slate-300 flex items-center justify-center gap-2 transition cursor-pointer';
+            } else {
+                btnF.className = 'py-2 px-3 rounded-xl text-xs font-extrabold border border-amber-400 bg-amber-500/25 text-amber-200 flex items-center justify-center gap-2 transition cursor-pointer';
+                btnM.className = 'py-2 px-3 rounded-xl text-xs font-extrabold border border-slate-700 bg-slate-900/75 text-slate-300 flex items-center justify-center gap-2 transition cursor-pointer';
+            }
+            rebuildPlayerModel(characterConfig);
+        }
+
+        function setHairStyle(style) {
+            characterConfig.hairStyle = style;
+            ['layered', 'ponytail', 'long'].forEach(s => {
+                const btn = document.getElementById(`hair-style-${s}`);
+                btn.className = s === style
+                    ? 'hair-style-btn py-1.5 px-2 rounded-lg text-xs font-bold border border-amber-400 bg-amber-500/20 text-amber-200 cursor-pointer'
+                    : 'hair-style-btn py-1.5 px-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-900/70 text-slate-300 cursor-pointer';
+            });
+            rebuildPlayerModel(characterConfig);
+        }
 
         function renderCreatorSwatches() {
             const buildSwatches = (containerId, list, currentHex, onSelect) => {
@@ -2710,43 +3274,30 @@
             buildSwatches('hair-swatches', HAIR_COLORS, characterConfig.hairColor, (item) => {
                 characterConfig.hairColor = item.hex;
                 document.getElementById('lbl-hair-color').textContent = item.name;
-                applyCharacterAppearance();
+                rebuildPlayerModel(characterConfig);
                 renderCreatorSwatches();
             });
 
             buildSwatches('eye-swatches', EYE_COLORS, characterConfig.eyeColor, (item) => {
                 characterConfig.eyeColor = item.hex;
                 document.getElementById('lbl-eye-color').textContent = item.name;
-                applyCharacterAppearance();
+                rebuildPlayerModel(characterConfig);
                 renderCreatorSwatches();
             });
 
             buildSwatches('skin-swatches', SKIN_COLORS, characterConfig.skinColor, (item) => {
                 characterConfig.skinColor = item.hex;
                 document.getElementById('lbl-skin-color').textContent = item.name;
-                applyCharacterAppearance();
+                rebuildPlayerModel(characterConfig);
                 renderCreatorSwatches();
             });
 
             buildSwatches('outfit-swatches', OUTFIT_COLORS, characterConfig.outfitColor, (item) => {
                 characterConfig.outfitColor = item.hex;
                 document.getElementById('lbl-outfit-color').textContent = item.name;
-                applyCharacterAppearance();
+                rebuildPlayerModel(characterConfig);
                 renderCreatorSwatches();
             });
-        }
-
-        function setHairStyle(style) {
-            characterConfig.hairStyle = style;
-            ['long', 'ponytail', 'short'].forEach(s => {
-                const btn = document.getElementById(`hair-style-${s}`);
-                if (s === style) {
-                    btn.className = 'hair-style-btn py-1.5 px-2 rounded-lg text-xs font-bold border border-amber-400 bg-amber-500/20 text-amber-200';
-                } else {
-                    btn.className = 'hair-style-btn py-1.5 px-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-900/70 text-slate-300';
-                }
-            });
-            applyCharacterAppearance();
         }
 
         function renderClassesGrid() {
@@ -2756,28 +3307,29 @@
                 const isSelected = cls.id === characterConfig.classId;
                 const card = document.createElement('div');
                 card.className = `class-card p-2.5 rounded-xl border ${isSelected ? 'active border-amber-400' : 'border-slate-700/70 bg-slate-900/65'} flex items-center gap-2.5`;
-                card.onclick = () => selectClass(cls.id, true);
+                card.onclick = () => selectClass(cls.id);
                 card.innerHTML = `
                     <div class="w-8 h-8 rounded-lg ${isSelected ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-amber-300'} flex items-center justify-center text-xs font-bold shrink-0">
                         <i class="fa-solid ${cls.icon}"></i>
                     </div>
                     <div class="min-w-0">
                         <div class="text-xs font-extrabold text-white truncate">${cls.name}</div>
-                        <div class="text-[10px] text-slate-400 truncate">${cls.weaponLabel}</div>
+                        <div class="text-[10px] text-slate-400 truncate">${cls.element} • ${cls.weaponLabel}</div>
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        function selectClass(classId, applyDefaultColors = false) {
+        function selectClass(classId) {
             characterConfig.classId = classId;
             const cls = RPG_CLASSES.find(c => c.id === classId) || RPG_CLASSES[0];
 
             document.getElementById('preview-class-badge').textContent = cls.name;
+            document.getElementById('preview-element-badge').textContent = cls.element;
             document.getElementById('class-weapon-tag').textContent = cls.weaponLabel;
             document.getElementById('sel-class-name').textContent = cls.name;
-            document.getElementById('sel-class-role').textContent = cls.role;
+            document.getElementById('sel-class-role').textContent = `Elemento: ${cls.element}`;
             document.getElementById('sel-class-desc').textContent = cls.desc;
             document.getElementById('sel-class-passive').textContent = cls.passive;
 
@@ -2789,24 +3341,18 @@
             document.getElementById('stat-preview-agi').textContent = cls.stats.agi;
 
             switchWeapon(cls.weaponIdx);
-
-            if (applyDefaultColors) {
-                characterConfig.outfitColor = cls.defaultOutfit;
-                characterConfig.hairColor = cls.defaultHair;
-                characterConfig.eyeColor = cls.defaultEye;
-                applyCharacterAppearance();
-                renderCreatorSwatches();
-            }
             renderClassesGrid();
         }
 
         function randomizeAppearance() {
-            const hStyle = ['long', 'ponytail', 'short'][Math.floor(Math.random() * 3)];
+            const g = Math.random() > 0.5 ? 'male' : 'female';
+            const hStyle = ['layered', 'ponytail', 'long'][Math.floor(Math.random() * 3)];
             const hCol = HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)];
             const eCol = EYE_COLORS[Math.floor(Math.random() * EYE_COLORS.length)];
             const sCol = SKIN_COLORS[Math.floor(Math.random() * SKIN_COLORS.length)];
             const oCol = OUTFIT_COLORS[Math.floor(Math.random() * OUTFIT_COLORS.length)];
 
+            characterConfig.gender = g;
             characterConfig.hairStyle = hStyle;
             characterConfig.hairColor = hCol.hex;
             characterConfig.eyeColor = eCol.hex;
@@ -2818,6 +3364,7 @@
             document.getElementById('lbl-skin-color').textContent = sCol.name;
             document.getElementById('lbl-outfit-color').textContent = oCol.name;
 
+            setGender(g);
             setHairStyle(hStyle);
             renderCreatorSwatches();
         }
@@ -2836,7 +3383,8 @@
 
         function updateCharacterSheetUI() {
             const calc = getCalculatedStats();
-            document.getElementById('sheet-char-name').textContent = characterConfig.name;
+            const activeM = teamMembers[activeTeamIndex] || { name: characterConfig.name };
+            document.getElementById('sheet-char-name').textContent = activeM.name;
             document.getElementById('sheet-class-title').textContent = calc.cls.name;
             document.getElementById('sheet-class-icon').className = `fa-solid ${calc.cls.icon}`;
             document.getElementById('sheet-level').textContent = player.level;
@@ -2852,22 +3400,15 @@
             document.getElementById('sheet-calc-matk').textContent = calc.magicAtk;
             document.getElementById('sheet-calc-crit').textContent = `${Math.round(calc.critRate * 100)}%`;
 
-            document.querySelectorAll('.attr-plus-btn').forEach(btn => {
-                btn.disabled = player.attrPoints <= 0;
-            });
+            document.querySelectorAll('.attr-plus-btn').forEach(btn => { btn.disabled = player.attrPoints <= 0; });
         }
 
         function spendAttributePoint(statKey) {
             if (player.attrPoints <= 0) return;
             player.attrPoints--;
             player.stats[statKey]++;
-            if (statKey === 'vit') {
-                recalculateVitals(false);
-                player.hp = Math.min(player.maxHp, player.hp + 120);
-            } else if (statKey === 'int') {
-                recalculateVitals(false);
-                player.mp = Math.min(player.maxMp, player.mp + 15);
-            }
+            if (statKey === 'vit') { recalculateVitals(false); player.hp = Math.min(player.maxHp, player.hp + 120); }
+            else if (statKey === 'int') { recalculateVitals(false); player.mp = Math.min(player.maxMp, player.mp + 15); }
             sfx.playLevelUp();
             updateCharacterSheetUI();
             saveGameProgress(false);
@@ -2881,7 +3422,7 @@
                 nextXp: player.nextXp,
                 attrPoints: player.attrPoints,
                 stats: player.stats,
-                weaponIdx: player.weaponIdx
+                pos: { x: player.pos.x, y: player.pos.y, z: player.pos.z }
             };
             localStorage.setItem(SAVE_KEY, JSON.stringify(data));
             if (notify) showCombatAlert('PROGRESSO SALVO!', 'text-emerald-300');
@@ -2909,26 +3450,33 @@
                 player.nextXp = saved.nextXp;
                 player.attrPoints = saved.attrPoints;
                 player.stats = { ...saved.stats };
-                applyCharacterAppearance();
-                switchWeapon(saved.weaponIdx);
+                if (saved.pos) player.pos.set(saved.pos.x, saved.pos.y, saved.pos.z);
+                rebuildPlayerModel(characterConfig);
+                buildInitialTeam();
                 recalculateVitals(true);
             } else {
                 const nameVal = document.getElementById('char-name-input').value.trim();
-                characterConfig.name = nameVal || 'Aetheris';
+                characterConfig.name = nameVal || 'Kaelen';
                 const cls = RPG_CLASSES.find(c => c.id === characterConfig.classId) || RPG_CLASSES[0];
                 player.level = 1;
                 player.xp = 0;
                 player.nextXp = 100;
                 player.attrPoints = 0;
                 player.stats = { ...cls.stats };
+                player.pos.set(0, getTerrainHeight(0, 80) + 0.5, 88);
+                rebuildPlayerModel(characterConfig);
+                buildInitialTeam();
                 switchWeapon(cls.weaponIdx);
                 recalculateVitals(true);
                 saveGameProgress(false);
             }
 
-            const cls = RPG_CLASSES.find(c => c.id === characterConfig.classId) || RPG_CLASSES[0];
-            document.getElementById('hud-char-name').textContent = characterConfig.name;
-            document.getElementById('hud-class-name').textContent = cls.name;
+            const activeM = teamMembers[0];
+            const elInfo = ELEMENTS[activeM.element] || ELEMENTS.Aero;
+            document.getElementById('hud-char-name').textContent = activeM.name;
+            const pill = document.getElementById('hud-element-pill');
+            pill.textContent = activeM.element;
+            pill.className = `text-[10px] px-1.5 py-0.5 rounded border font-bold ${elInfo.badge}`;
             updateCharacterSheetUI();
 
             document.getElementById('start-screen').classList.add('hidden');
@@ -2937,10 +3485,9 @@
             renderer.domElement.requestPointerLock();
         }
 
-        // Inicializar UI da Tela de Criação
         renderCreatorSwatches();
         renderClassesGrid();
-        selectClass('warrior', false);
+        selectClass('warrior');
         checkSavedGame();
 
         document.getElementById('btn-start-game').addEventListener('click', () => enterWorld(false));
@@ -2962,7 +3509,7 @@
         });
 
         /* =========================================================================
-           14. MAIN ANIMATION LOOP
+           15. LOOP PRINCIPAL DE ANIMAÇÃO (60 FPS)
         ========================================================================= */
         let lastTime = performance.now();
 
@@ -2984,9 +3531,10 @@
 
             skyMat.uniforms.uTime.value = elapsed;
             oceanMat.uniforms.uTime.value = elapsed;
-            if (grassMat.userData.shader) {
-                grassMat.userData.shader.uniforms.uTime.value = elapsed;
-            }
+            if (grassMat.userData.shader) grassMat.userData.shader.uniforms.uTime.value = elapsed;
+
+            // Rotação dos cristais de teletransporte das 10 Cidades
+            waypointBeacons.forEach(c => { c.rotation.y += dt * 1.5; });
 
             if (gameStarted) {
                 updatePlayer(dt);
@@ -3003,4 +3551,8 @@
         animate(performance.now());
     </script>
 </body>
-</html>
+</html>'''
+
+with open('index.html', 'w', encoding='utf-8') as f:
+    f.write(html_code)
+print("index.html updated successfully")
