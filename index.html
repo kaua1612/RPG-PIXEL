@@ -9,7 +9,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">        
+    
+    <!-- PeerJS (WebRTC P2P Multiplayer Online) -->
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     
     <!-- Google Fonts: Cinzel & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -289,6 +292,10 @@
                     <button id="btn-open-char" class="px-2 py-1 rounded-lg bg-slate-900/90 hover:bg-amber-500/20 border border-amber-400/30 text-[10px] text-amber-200 transition">
                         <i class="fa-solid fa-user-shield mr-1"></i>Ficha [C]
                     </button>
+                    <button id="btn-open-coop" class="px-2 py-1 rounded-lg bg-sky-950/90 hover:bg-sky-500/30 border border-sky-400/50 text-[10px] text-sky-200 font-bold transition flex items-center gap-1">
+                        <span id="coop-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>Online [O] (<span id="coop-count">1</span>)</span>
+                    </button>
                     <button id="btn-open-settings" class="px-2 py-1 rounded-lg bg-slate-900/90 hover:bg-amber-500/20 border border-amber-400/30 text-[10px] text-amber-200 transition">
                         <i class="fa-solid fa-gear"></i>
                     </button>
@@ -296,162 +303,187 @@
             </div>
         </div>
 
-        <!-- Top Center: Target / World Boss Health Bar -->
-        <div id="target-hud" class="hidden fixed top-4 left-1/2 -translate-x-1/2 w-[88vw] max-w-md glass-panel rounded-2xl px-4 py-2.5">
-            <div class="flex items-center justify-between mb-1">
-                <div class="flex items-center gap-2">
-                    <span id="target-badge" class="px-1.5 py-0.5 rounded bg-rose-500/30 border border-rose-400 text-[9px] font-bold text-rose-200 uppercase">BOSS</span>
-                    <span id="target-name" class="font-cinzel font-bold text-sm text-white">Crownless Sovereign</span>
+        <!-- Bottom Left: Co-Op Live Chat Box -->
+        <div id="coop-chat-box" class="hidden md:flex fixed bottom-4 left-4 w-72 flex-col gap-1.5 pointer-events-auto z-30">
+            <div id="coop-chat-messages" class="glass-panel rounded-xl p-2.5 h-28 overflow-y-auto text-[11px] space-y-1 flex flex-col justify-end">
+                <div class="text-sky-300/90"><i class="fa-solid fa-tower-broadcast mr-1"></i>Terminal Co-Op de Solis pronto. Pressione <b>[O]</b> para convidar amigos!</div>
+            </div>
+            <div class="flex gap-1">
+                <input id="coop-chat-input" type="text" maxlength="80" placeholder="[Enter] Enviar mensagem no Co-Op..."
+                       class="flex-1 bg-slate-950/85 border border-amber-400/30 rounded-lg px-2.5 py-1 text-[11px] text-white focus:outline-none focus:border-sky-400">
+                <button id="coop-chat-send" class="px-2.5 py-1 rounded-lg bg-sky-500/25 hover:bg-sky-500/40 border border-sky-400/40 text-sky-200 text-[11px]">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Top Center: Locked Target / Boss HP & Stagger Bar + Parry Alert -->
+        <div class="fixed top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 w-[90%] max-w-md">
+            <div id="target-hud" class="hidden w-full glass-panel rounded-2xl px-4 py-2.5">
+                <div class="flex items-center justify-between text-xs mb-1">
+                    <div class="flex items-center gap-2">
+                        <span id="target-badge" class="px-2 py-0.5 rounded bg-rose-500/30 border border-rose-400/50 text-[10px] font-bold text-rose-200">BOSS</span>
+                        <span id="target-name" class="font-cinzel font-bold text-white">Crownless Sovereign</span>
+                    </div>
+                    <span id="target-hp-text" class="font-mono text-[11px] text-rose-200">2500 / 2500</span>
                 </div>
-                <span id="target-hp-text" class="text-xs font-mono text-rose-300">1000 / 1000</span>
+                <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-rose-500/30">
+                    <div id="target-hp-bar" class="h-full bg-gradient-to-r from-rose-600 via-red-500 to-amber-400 w-full transition-all duration-150"></div>
+                </div>
+                <div class="w-full h-1 bg-slate-950 rounded-full overflow-hidden mt-1">
+                    <div id="target-stagger-bar" class="h-full bg-amber-300 w-full transition-all duration-150"></div>
+                </div>
             </div>
-            <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-rose-500/30 p-0.5">
-                <div id="target-hp-bar" class="h-full bg-gradient-to-r from-rose-600 via-red-500 to-amber-400 rounded-full transition-all duration-150" style="width: 100%"></div>
-            </div>
-            <div class="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden mt-1">
-                <div id="target-stagger-bar" class="h-full bg-gradient-to-r from-amber-300 to-white transition-all duration-150" style="width: 100%"></div>
+
+            <!-- Golden Parry Window Banner -->
+            <div id="parry-banner" class="hidden px-4 py-1 rounded-full bg-amber-400/90 text-slate-950 font-cinzel font-black text-xs tracking-widest shadow-[0_0_25px_#fbbf24] animate-bounce">
+                <i class="fa-solid fa-shield-halved mr-1"></i> PARRY! ATAQUE AGORA [CLIQUE / J]
             </div>
         </div>
 
-        <!-- Parry Alert Indicator -->
-        <div id="parry-banner" class="hidden fixed top-28 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full bg-amber-400/20 border-2 border-amber-300 shadow-[0_0_25px_rgba(251,191,36,0.9)]">
-            <span class="font-cinzel font-black text-sm tracking-widest text-amber-200 animate-pulse">
-                <i class="fa-solid fa-shield-halved mr-1.5"></i>JANELA DE PARRY! [CLIQUE ESQ / J]
-            </span>
+        <!-- Top Right: 3-Resonator Party Switcher + Combo Counter -->
+        <div class="fixed top-4 right-4 flex flex-col items-end gap-2.5 pointer-events-auto">
+            <div id="party-container" class="flex flex-col gap-2 w-48 md:w-56"></div>
+
+            <!-- Hit Combo Counter -->
+            <div id="combo-display" class="hidden glass-panel rounded-2xl px-4 py-2 text-right border-amber-400/50">
+                <span id="combo-count" class="font-cinzel text-3xl font-black text-amber-300 gold-glow-text">12</span>
+                <span class="text-[10px] uppercase tracking-[0.25em] text-sky-300 block">HITS COMBO</span>
+            </div>
         </div>
 
-        <!-- Top Right: 3-Resonator Party Switcher (F1 - F3 / 1 - 3) -->
-        <div id="party-container" class="fixed top-4 right-4 flex flex-col gap-2 pointer-events-auto w-48 md:w-56"></div>
-
-        <!-- Center Dynamic TPS Crosshair -->
-        <div id="crosshair" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-65">
-            <div class="relative w-8 h-8 flex items-center justify-center">
-                <div id="crosshair-ring" class="w-6 h-6 rounded-full border border-amber-200/80 transition-all duration-150"></div>
+        <!-- Center Reticle (Crosshair for TPS Aiming) -->
+        <div id="crosshair" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
+            <div id="crosshair-ring" class="w-5 h-5 rounded-full border border-white/40 transition-all duration-150 flex items-center justify-center">
                 <div class="w-1 h-1 rounded-full bg-amber-300"></div>
             </div>
         </div>
 
-        <!-- Combo Counter -->
-        <div id="combo-display" class="hidden fixed right-6 top-1/2 -translate-y-1/2 text-right">
-            <div id="combo-count" class="font-cinzel font-black text-4xl md:text-5xl text-amber-300 gold-glow-text">0</div>
-            <div class="text-[10px] uppercase tracking-[0.3em] text-amber-100/80 font-bold">HITS COMBO</div>
-        </div>
-
-        <!-- Bottom Center: Active Resonator Status, Forte Circuit & Action Skills -->
-        <div class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[94vw] max-w-2xl flex flex-col items-center gap-2 pointer-events-auto">
-            
-            <!-- Skills Row -->
-            <div class="flex items-center gap-3">
-                <button id="skill-btn-atk" class="glass-panel w-12 h-12 rounded-xl flex flex-col items-center justify-center hover:border-amber-300 transition active:scale-95">
-                    <i class="fa-solid fa-khanda text-amber-300 text-base"></i>
-                    <span class="text-[9px] text-slate-300 mt-0.5 font-bold">LMB / J</span>
-                </button>
-
-                <button id="skill-btn-dodge" class="relative glass-panel w-12 h-12 rounded-xl flex flex-col items-center justify-center hover:border-sky-300 transition active:scale-95 overflow-hidden">
-                    <i class="fa-solid fa-wind text-sky-300 text-base"></i>
-                    <span class="text-[9px] text-slate-300 mt-0.5 font-bold">SHIFT</span>
-                    <div id="cd-dodge" class="absolute inset-0 bg-slate-950/80 hidden items-center justify-center text-xs font-bold text-white"></div>
-                </button>
-
-                <button id="skill-btn-e" class="relative glass-panel w-14 h-14 rounded-2xl flex flex-col items-center justify-center border-amber-400/60 hover:border-amber-200 transition active:scale-95 overflow-hidden">
-                    <i class="fa-solid fa-wand-magic-sparkles text-amber-300 text-lg"></i>
-                    <span class="text-[10px] text-amber-200 mt-0.5 font-extrabold">[E]</span>
-                    <div id="cd-e" class="absolute inset-0 bg-slate-950/85 hidden items-center justify-center text-sm font-bold text-amber-300"></div>
-                </button>
-
-                <button id="skill-btn-r" class="relative glass-panel w-16 h-16 rounded-2xl flex flex-col items-center justify-center border-2 border-amber-300/80 shadow-[0_0_20px_rgba(229,193,88,0.35)] hover:scale-105 transition active:scale-95 overflow-hidden">
-                    <i class="fa-solid fa-sun text-yellow-300 text-xl"></i>
-                    <span class="text-[10px] text-yellow-200 mt-0.5 font-black">[R] ULT</span>
-                    <div id="energy-fill-r" class="absolute bottom-0 left-0 right-0 bg-amber-400/30 transition-all duration-200" style="height: 100%"></div>
-                    <div id="cd-r" class="absolute inset-0 bg-slate-950/85 hidden items-center justify-center text-sm font-bold text-amber-300"></div>
-                </button>
-
-                <button id="skill-btn-aim" class="glass-panel w-12 h-12 rounded-xl flex flex-col items-center justify-center hover:border-amber-300 transition active:scale-95">
-                    <i class="fa-solid fa-crosshairs text-emerald-300 text-base"></i>
-                    <span class="text-[9px] text-slate-300 mt-0.5 font-bold">MIRA [V]</span>
-                </button>
+        <!-- Bottom Center: Active Resonator HP, Stamina & Forte Circuit -->
+        <div class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[94%] max-w-lg flex flex-col items-center gap-2">
+            <!-- Notification Toast -->
+            <div id="toast-box" class="opacity-0 transition-opacity duration-300 glass-panel px-4 py-1.5 rounded-full text-xs font-semibold text-amber-200 flex items-center gap-2">
+                <i class="fa-solid fa-sparkles text-amber-400"></i>
+                <span id="toast-text">Sistema pronto</span>
             </div>
 
-            <!-- Forte Circuit + HP + Stamina Bar Container -->
+            <!-- Forte Circuit Gauge -->
             <div class="w-full glass-panel rounded-2xl px-4 py-2.5">
                 <div class="flex items-center justify-between text-xs mb-1">
                     <div class="flex items-center gap-2">
                         <span id="hud-char-name" class="font-cinzel font-bold text-amber-200">Rover Solis</span>
-                        <span id="hud-char-lvl" class="px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 text-[10px] font-bold">Nv. 1</span>
+                        <span id="hud-char-lvl" class="text-[10px] px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold">Nv. 1</span>
+                        <span id="hud-forte-ready" class="hidden text-[9px] px-1.5 py-0.5 rounded bg-sky-400/25 border border-sky-300/60 text-sky-200 font-bold animate-pulse">FORTE 100%</span>
                     </div>
-                    <div class="flex items-center gap-3 font-mono text-[11px]">
+                    <div class="flex items-center gap-3 text-[11px] font-mono">
                         <span class="text-sky-300">Forte: <b id="hud-forte-pct">0%</b></span>
-                        <span class="text-emerald-300">HP: <b id="hud-hp-text">1000/1000</b></span>
+                        <span class="text-emerald-300" id="hud-hp-text">1000/1000</span>
                     </div>
                 </div>
 
-                <!-- Forte Circuit Gauge -->
-                <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-sky-400/30 mb-1.5">
-                    <div id="hud-forte-bar" class="h-full bg-gradient-to-r from-sky-500 via-cyan-300 to-amber-300 transition-all duration-150" style="width: 0%"></div>
+                <!-- Forte Bar -->
+                <div class="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden mb-1.5 border border-sky-400/30">
+                    <div id="hud-forte-bar" class="h-full bg-gradient-to-r from-sky-400 via-cyan-300 to-amber-300 w-0 transition-all duration-150"></div>
                 </div>
 
-                <!-- HP & Stamina Split -->
-                <div class="grid grid-cols-12 gap-2">
-                    <div class="col-span-8 h-2.5 bg-slate-950 rounded-full overflow-hidden border border-emerald-500/30">
-                        <div id="hud-hp-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all duration-150" style="width: 100%"></div>
+                <!-- HP & Stamina Bars -->
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="col-span-2 h-2.5 bg-slate-950 rounded-full overflow-hidden border border-emerald-500/30">
+                        <div id="hud-hp-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-300 w-full transition-all duration-150"></div>
                     </div>
-                    <div class="col-span-4 h-2.5 bg-slate-950 rounded-full overflow-hidden border border-amber-400/30">
-                        <div id="hud-stam-bar" class="h-full bg-gradient-to-r from-amber-500 to-yellow-200 transition-all duration-100" style="width: 100%"></div>
+                    <div class="col-span-1 h-2.5 bg-slate-950 rounded-full overflow-hidden border border-amber-400/30">
+                        <div id="hud-stam-bar" class="h-full bg-gradient-to-r from-amber-400 to-yellow-200 w-full transition-all duration-100"></div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Controls Quick Hint -->
-            <div class="hidden md:flex items-center gap-4 text-[10px] text-slate-400 bg-slate-950/75 px-3.5 py-1 rounded-full border border-slate-800">
-                <span><b class="text-amber-300">WASD</b> Mover</span>
-                <span><b class="text-amber-300">Espaço (x2)</b> Pulo / Planador</span>
-                <span><b class="text-amber-300">Shift</b> Esquiva</span>
-                <span><b class="text-amber-300">Clique / Arraste</b> Atacar / Girar Câmera</span>
-                <span><b class="text-amber-300">1-3 / F1-F3</b> Trocar Herói</span>
-                <span><b class="text-amber-300">M</b> Mapa</span>
+        <!-- Mobile Touch D-Pad & Jump (Visible on touch/small viewports) -->
+        <div class="md:hidden fixed bottom-24 left-4 pointer-events-auto flex flex-col items-center gap-1 opacity-85">
+            <button data-vkey="KeyW" class="vjoy-btn w-11 h-11 rounded-xl glass-panel flex items-center justify-center text-amber-200 active:bg-amber-400/30"><i class="fa-solid fa-chevron-up"></i></button>
+            <div class="flex gap-1">
+                <button data-vkey="KeyA" class="vjoy-btn w-11 h-11 rounded-xl glass-panel flex items-center justify-center text-amber-200 active:bg-amber-400/30"><i class="fa-solid fa-chevron-left"></i></button>
+                <button id="btn-mobile-jump" class="w-11 h-11 rounded-xl glass-panel flex items-center justify-center text-sky-300 active:bg-sky-400/30"><i class="fa-solid fa-feather-pointed"></i></button>
+                <button data-vkey="KeyD" class="vjoy-btn w-11 h-11 rounded-xl glass-panel flex items-center justify-center text-amber-200 active:bg-amber-400/30"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
+            <button data-vkey="KeyS" class="vjoy-btn w-11 h-11 rounded-xl glass-panel flex items-center justify-center text-amber-200 active:bg-amber-400/30"><i class="fa-solid fa-chevron-down"></i></button>
+        </div>
+
+        <!-- Bottom Right: Action Skill Wheel -->
+        <div class="fixed bottom-4 right-4 flex items-end gap-2.5 pointer-events-auto">
+            <!-- Dodge -->
+            <button id="skill-btn-dodge" class="w-12 h-12 rounded-2xl glass-panel hover:border-amber-300 flex flex-col items-center justify-center relative group">
+                <i class="fa-solid fa-wind text-sky-300 text-base"></i>
+                <span class="text-[9px] font-bold text-slate-300 mt-0.5">SHIFT</span>
+            </button>
+
+            <!-- Resonance Skill [E] -->
+            <button id="skill-btn-e" class="w-14 h-14 rounded-2xl glass-panel hover:border-amber-300 flex flex-col items-center justify-center relative overflow-hidden">
+                <i class="fa-solid fa-burst text-amber-300 text-lg"></i>
+                <span class="text-[10px] font-bold text-white mt-0.5">E</span>
+                <div id="cd-e" class="hidden absolute inset-0 bg-slate-950/85 items-center justify-center text-xs font-bold text-amber-300">0.0</div>
+            </button>
+
+            <!-- Resonance Liberation Ultimate [R] -->
+            <button id="skill-btn-r" class="w-16 h-16 rounded-2xl glass-panel border-amber-400/60 hover:border-amber-200 flex flex-col items-center justify-center relative overflow-hidden shadow-[0_0_20px_rgba(229,193,88,0.3)]">
+                <i class="fa-solid fa-sun text-yellow-300 text-xl"></i>
+                <span class="text-[10px] font-black text-amber-200 mt-0.5">R</span>
+                <div id="energy-fill-r" class="absolute bottom-0 left-0 right-0 bg-amber-400/25 h-full pointer-events-none transition-all"></div>
+                <div id="cd-r" class="hidden absolute inset-0 bg-slate-950/85 items-center justify-center text-xs font-bold text-amber-300">0.0</div>
+            </button>
+
+            <!-- Basic Attack / Aim -->
+            <div class="flex flex-col gap-2">
+                <button id="skill-btn-aim" title="Modo Mira TPS [V / Botão Direito]" class="w-12 h-10 rounded-xl glass-panel hover:border-sky-300 flex items-center justify-center text-xs font-bold text-sky-200">
+                    <i class="fa-solid fa-crosshairs mr-1"></i>V
+                </button>
+                <button id="skill-btn-atk" class="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-black shadow-[0_0_24px_rgba(229,193,88,0.55)] active:scale-90 transition flex flex-col items-center justify-center">
+                    <i class="fa-solid fa-khanda text-xl"></i>
+                    <span class="text-[9px] font-extrabold">ATK / J</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Subtle Controls Legend -->
+        <div class="hidden xl:flex fixed bottom-24 left-4 glass-panel rounded-xl px-3 py-2 text-[10px] text-slate-300 flex-col gap-1">
+            <span><b class="text-amber-300">WASD</b> Mover • <b class="text-amber-300">Arrastar Mouse</b> Câmera • <b class="text-amber-300">Espaço 2x</b> Planador</span>
+            <span><b class="text-amber-300">Clique / J</b> Combo (Segurar: Forte) • <b class="text-amber-300">E</b> Skill • <b class="text-amber-300">R</b> Ultimate</span>
+            <span><b class="text-amber-300">Botão Direito / V</b> Mira TPS • <b class="text-amber-300">1-3 / F1-F3</b> Trocar Herói • <b class="text-sky-300">O</b> Co-Op</span>
         </div>
     </div>
 
     <!-- ===================================================================== -->
-    <!-- MODAL 1: INTERACTIVE WORLD MAP & TELEPORT [M]                         -->
+    <!-- MODAL 1: INTERACTIVE WORLD MAP & FAST TRAVEL [M]                      -->
     <!-- ===================================================================== -->
     <div id="map-modal" class="hidden fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="glass-panel rounded-3xl w-full max-w-5xl p-5 md:p-6 flex flex-col md:flex-row gap-5 max-h-[92vh]">
-            <div class="flex-1 flex flex-col">
-                <div class="flex items-center justify-between mb-3">
-                    <div>
-                        <span class="text-[10px] uppercase tracking-[0.25em] text-amber-300">Atlas de Solis Archipelago</span>
-                        <h2 class="font-cinzel text-xl md:text-2xl font-bold text-white">Mapa Mundial & Nexus de Teleporte</h2>
-                    </div>
-                    <button id="btn-close-map" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-rose-500/30 border border-slate-700 text-slate-300">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+        <div class="glass-panel rounded-3xl w-full max-w-4xl p-5 md:p-6 flex flex-col gap-4 max-h-[90vh]">
+            <div class="flex items-center justify-between border-b border-amber-400/25 pb-3">
+                <div>
+                    <span class="text-[10px] uppercase tracking-[0.25em] text-amber-300">Cartografia de Ressonância</span>
+                    <h2 class="font-cinzel text-xl md:text-2xl font-bold text-white">Mapa do Arquipélago de Solis (10 Cidades Nexus)</h2>
                 </div>
-                <div class="relative flex-1 min-h-[300px] rounded-2xl overflow-hidden border border-amber-400/35 bg-slate-950">
-                    <canvas id="worldmap-canvas" width="700" height="520" class="w-full h-full object-contain cursor-pointer"></canvas>
-                </div>
-                <div class="flex flex-wrap gap-4 mt-2.5 text-[11px] text-slate-300">
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span> Você</span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-300 inline-block"></span> Cidade / Nexus (Clique p/ Teleportar)</span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Chefe Mundial (Tacet Overlord)</span>
-                </div>
+                <button id="btn-close-map" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-rose-500/30 border border-slate-700 text-slate-300">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
-            <div class="w-full md:w-72 flex flex-col bg-slate-950/75 rounded-2xl p-4 border border-amber-400/20 overflow-y-auto">
-                <h3 class="font-cinzel font-bold text-amber-300 text-sm mb-2.5 border-b border-slate-800 pb-2">
-                    <i class="fa-solid fa-torii-gate mr-1.5"></i>10 Cidades de Solis
-                </h3>
-                <div id="map-city-list" class="space-y-2 overflow-y-auto pr-1"></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
+                <div class="md:col-span-2 relative rounded-2xl overflow-hidden border border-amber-400/30 bg-[#061224] aspect-square max-h-[58vh] mx-auto w-full">
+                    <canvas id="worldmap-canvas" width="600" height="600" class="w-full h-full cursor-pointer"></canvas>
+                    <div class="absolute bottom-2 left-2 bg-slate-950/85 px-3 py-1 rounded-lg text-[10px] text-amber-200 border border-amber-400/30">
+                        Clique em qualquer Cidade Nexus para Teleporte Instantâneo
+                    </div>
+                </div>
+                <div id="map-city-list" class="flex flex-col gap-2 overflow-y-auto max-h-[58vh] pr-1"></div>
             </div>
         </div>
     </div>
 
     <!-- ===================================================================== -->
-    <!-- MODAL 2: CHARACTER SHEET & ATTRIBUTE ALLOCATION [C]                   -->
+    <!-- MODAL 2: RESONATOR CHARACTER SHEET & ATTRIBUTE UPGRADES [C]           -->
     <!-- ===================================================================== -->
     <div id="char-modal" class="hidden fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="glass-panel rounded-3xl w-full max-w-2xl p-6 space-y-5">
+        <div class="glass-panel rounded-3xl w-full max-w-2xl p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-amber-400/25 pb-3">
                 <div>
                     <span class="text-[10px] uppercase tracking-[0.25em] text-sky-300">Terminal de Ressonância</span>
@@ -463,24 +495,26 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-slate-950/70 rounded-2xl p-4 border border-slate-800 space-y-3">
+                <div class="bg-slate-950/75 border border-amber-400/25 rounded-2xl p-4 space-y-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs text-slate-400">Pontos Disponíveis</span>
-                        <span id="sheet-stat-points" class="px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-400 text-amber-300 font-bold text-xs">0 PTS</span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-300">Atributos Base</span>
+                        <span id="sheet-stat-points" class="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold">0 PTS</span>
                     </div>
                     <div id="sheet-attributes-list" class="space-y-2.5"></div>
                 </div>
 
-                <div class="bg-slate-950/70 rounded-2xl p-4 border border-slate-800 space-y-2.5 text-xs">
-                    <h3 class="font-cinzel font-bold text-amber-300 text-sm mb-2">Status Derivados</h3>
-                    <div class="flex justify-between py-1 border-b border-slate-800/80"><span class="text-slate-400">Classe & Elemento</span><b id="sheet-class" class="text-white">-</b></div>
-                    <div class="flex justify-between py-1 border-b border-slate-800/80"><span class="text-slate-400">HP Máximo</span><b id="sheet-hp" class="text-emerald-300">-</b></div>
-                    <div class="flex justify-between py-1 border-b border-slate-800/80"><span class="text-slate-400">Ataque Base</span><b id="sheet-atk" class="text-amber-300">-</b></div>
-                    <div class="flex justify-between py-1 border-b border-slate-800/80"><span class="text-slate-400">Chance Crítica</span><b id="sheet-crit" class="text-sky-300">-</b></div>
-                    <div class="flex justify-between py-1 border-b border-slate-800/80"><span class="text-slate-400">Experiência (EXP)</span><b id="sheet-exp" class="text-purple-300">-</b></div>
-                    <div class="pt-2">
-                        <span class="text-[10px] uppercase tracking-wider text-sky-400 block">Passiva Forte Circuit</span>
-                        <p id="sheet-passive" class="text-slate-300 mt-1 leading-relaxed">-</p>
+                <div class="bg-slate-950/75 border border-sky-400/25 rounded-2xl p-4 space-y-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-sky-300 block">Status de Combate</span>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Classe:</span><b id="sheet-class" class="text-white">-</b></div>
+                        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">HP Máximo:</span><b id="sheet-hp" class="text-emerald-300">-</b></div>
+                        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Poder de Ataque:</span><b id="sheet-atk" class="text-amber-300">-</b></div>
+                        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Taxa Crítica:</span><b id="sheet-crit" class="text-rose-300">-</b></div>
+                        <div class="flex justify-between py-1"><span class="text-slate-400">Experiência:</span><b id="sheet-exp" class="text-sky-300">-</b></div>
+                    </div>
+                    <div class="bg-sky-950/40 border border-sky-400/30 rounded-xl p-2.5 mt-2">
+                        <span class="text-[10px] font-bold uppercase text-sky-300 block">Passiva Forte Circuit</span>
+                        <p id="sheet-passive" class="text-[11px] text-slate-200 mt-1"></p>
                     </div>
                 </div>
             </div>
@@ -488,7 +522,7 @@
     </div>
 
     <!-- ===================================================================== -->
-    <!-- MODAL 3: GRAPHICS & AUDIO SETTINGS [ESC]                              -->
+    <!-- MODAL 3: GRAPHICS, AUDIO & SAVE SETTINGS [ESC]                        -->
     <!-- ===================================================================== -->
     <div id="settings-modal" class="hidden fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
         <div class="glass-panel rounded-3xl w-full max-w-md p-6 space-y-4">
@@ -498,29 +532,27 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-
-            <div class="space-y-3 text-sm">
-                <label class="flex items-center justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-800 cursor-pointer">
-                    <span>Pós-Processamento Bloom (Brilho)</span>
+            <div class="space-y-3 text-xs">
+                <label class="flex items-center justify-between bg-slate-900/80 p-3 rounded-xl">
+                    <span>Pós-Processamento Bloom Cinematográfico</span>
                     <input id="opt-bloom" type="checkbox" checked class="accent-amber-400 w-4 h-4">
                 </label>
-                <label class="flex items-center justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-800 cursor-pointer">
-                    <span>Sombras Dinâmicas 2048px</span>
+                <label class="flex items-center justify-between bg-slate-900/80 p-3 rounded-xl">
+                    <span>Sombras Dinâmicas em Tempo Real</span>
                     <input id="opt-shadows" type="checkbox" checked class="accent-amber-400 w-4 h-4">
                 </label>
-                <label class="flex items-center justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-800 cursor-pointer">
-                    <span>Áudio Procedural & Efeitos</span>
+                <label class="flex items-center justify-between bg-slate-900/80 p-3 rounded-xl">
+                    <span>Efeitos Sonoros Sintetizados (Web Audio)</span>
                     <input id="opt-audio" type="checkbox" checked class="accent-amber-400 w-4 h-4">
                 </label>
-                <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800">
-                    <div class="flex justify-between text-xs mb-1">
+                <div class="bg-slate-900/80 p-3 rounded-xl space-y-1">
+                    <div class="flex justify-between">
                         <span>Sensibilidade da Câmera</span>
-                        <span id="sens-val">1.0x</span>
+                        <span id="sens-val" class="text-amber-300 font-bold">1.0x</span>
                     </div>
-                    <input id="opt-sens" type="range" min="0.4" max="2.2" step="0.1" value="1.0" class="w-full accent-amber-400">
+                    <input id="opt-sens" type="range" min="0.3" max="2.5" step="0.1" value="1.0" class="w-full accent-amber-400">
                 </div>
             </div>
-
             <div class="pt-2 flex gap-2">
                 <button id="btn-save-now" class="flex-1 btn-resonator py-2.5 rounded-xl text-xs font-bold text-amber-200">
                     <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar Agora
@@ -532,11 +564,53 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast-box" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300">
-        <div class="glass-panel px-5 py-2.5 rounded-full border-amber-300/70 text-xs md:text-sm font-semibold text-amber-200 shadow-2xl flex items-center gap-2">
-            <i class="fa-solid fa-sparkles text-amber-400"></i>
-            <span id="toast-text">Notificação</span>
+    <!-- ===================================================================== -->
+    <!-- MODAL 4: ONLINE CO-OP MULTIPLAYER TERMINAL [O]                        -->
+    <!-- ===================================================================== -->
+    <div id="coop-modal" class="hidden fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl w-full max-w-lg p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-sky-400/30 pb-3">
+                <div>
+                    <span class="text-[10px] uppercase tracking-[0.25em] text-sky-300">Rede de Ressonância P2P</span>
+                    <h2 class="font-cinzel text-xl font-bold text-white"><i class="fa-solid fa-globe text-sky-400 mr-2"></i>Sessão Co-Op Online</h2>
+                </div>
+                <button id="btn-close-coop" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-rose-500/30 border border-slate-700 text-slate-300">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- My Peer ID -->
+            <div class="bg-slate-950/80 border border-amber-400/30 rounded-2xl p-3.5 space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-slate-300 font-semibold">Seu Código de Mundo (Envie para seu amigo):</span>
+                    <span id="coop-peer-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">Conectando...</span>
+                </div>
+                <div class="flex gap-2">
+                    <input id="coop-my-id" type="text" readonly value="Gerando ID..."
+                           class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-amber-300 select-all">
+                    <button id="btn-copy-peer-id" class="btn-resonator px-3.5 py-2 rounded-xl text-xs font-bold text-amber-200 flex items-center gap-1.5">
+                        <i class="fa-solid fa-copy"></i> Copiar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Join Friend's World -->
+            <div class="bg-slate-950/80 border border-sky-400/30 rounded-2xl p-3.5 space-y-2">
+                <span class="text-xs text-slate-300 font-semibold block">Entrar no Mundo de outro Resonator:</span>
+                <div class="flex gap-2">
+                    <input id="coop-join-id" type="text" placeholder="Cole o código do amigo aqui..."
+                           class="flex-1 bg-slate-900 border border-sky-400/40 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-sky-300">
+                    <button id="btn-connect-peer" class="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 text-slate-950 font-bold text-xs hover:brightness-110 transition">
+                        Conectar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Connected Players List -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-3.5">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Resonators na Sessão</h3>
+                <div id="coop-players-list" class="space-y-1.5 max-h-36 overflow-y-auto text-xs"></div>
+            </div>
         </div>
     </div>
 
@@ -2103,14 +2177,9 @@ const Party = {
         this.activeIndex = idx;
         Player.rebuildMesh();
         SoundFX.switchHero();
-
-        const cls = GAME_DATA.classes.find(c => c.id === next.classId);
-        next.forte = Math.min(100, next.forte + 25);
-        Combat.spawnShockwave(Player.pos, cls.color, 6.5);
-        Combat.damageEnemiesInRadius(Player.pos, 6.5, Combat.calcDamage(1.45), cls.color, 'INTRO SKILL!');
-        UI.flashScreen(cls.color, 0.22);
-        UI.toast(`Intro Skill: ${next.name} (${cls.element})`);
+        if (typeof Multiplayer !== 'undefined') Multiplayer.broadcastState(true);
         UI.updatePartyHUD();
+        UI.toast(`Resonator ativo: ${next.name}`);
     },
 
     gainExp(amount) {
@@ -2119,34 +2188,32 @@ const Party = {
         while (m.exp >= m.nextExp) {
             m.exp -= m.nextExp;
             m.level++;
-            m.nextExp = Math.floor(m.nextExp * 1.35);
+            m.nextExp = Math.round(m.nextExp * 1.35);
             m.statPoints += 3;
             m.maxHp += 120;
             m.hp = m.maxHp;
             SoundFX.levelUp();
-            Combat.spawnShockwave(Player.pos, '#fde047', 8.0);
-            UI.toast(`LEVEL UP! ${m.name} alcançou Nível ${m.level} (+3 Pontos)`);
+            UI.flashScreen('#fde047', 0.35);
+            UI.toast(`NÍVEL UP! ${m.name} alcançou o Nível ${m.level}! (+3 Pontos)`);
         }
+        UI.updatePartyHUD();
     }
 };
 
 const Player = {
+    mesh: null,
     pos: new THREE.Vector3(0, 8, 12),
     vel: new THREE.Vector3(),
     yaw: Math.PI,
-    mesh: null,
-    grounded: false,
-    jumpsRemaining: 2,
+    isGrounded: false,
+    jumpCount: 0,
     isGliding: false,
     stamina: 100,
-    dodgeTimer: 0,
-    dodgeCooldown: 0,
     invulnTimer: 0,
-    animTime: 0,
     attackAnimTimer: 0,
+    walkCycle: 0,
 
     init() {
-        this.pos.set(0, WorldMath.getTerrainHeight(0, 12), 12);
         this.rebuildMesh();
     },
 
@@ -2158,111 +2225,83 @@ const Player = {
     },
 
     jump() {
-        if (this.grounded) {
-            this.vel.y = 12.5;
-            this.grounded = false;
-            this.jumpsRemaining = 1;
+        if (this.isGrounded) {
+            this.vel.y = 14.5;
+            this.isGrounded = false;
+            this.jumpCount = 1;
             SoundFX.dodge();
-        } else if (this.jumpsRemaining > 0) {
-            this.vel.y = 11.5;
-            this.jumpsRemaining = 0;
+        } else if (!this.isGliding && this.stamina > 10) {
             this.isGliding = true;
-            SoundFX.skill();
-            const cls = GAME_DATA.classes.find(c => c.id === Party.active.classId);
-            Combat.spawnShockwave(this.pos, cls.color, 2.2);
-        } else {
-            this.isGliding = !this.isGliding;
+            this.vel.y = Math.max(this.vel.y, -1.5);
+            SoundFX.switchHero();
+        } else if (this.isGliding) {
+            this.isGliding = false;
         }
     },
 
     dodge() {
-        if (this.dodgeCooldown > 0 || this.stamina < 20) return;
-        this.stamina -= 20;
-        this.dodgeTimer = 0.24;
-        this.dodgeCooldown = 0.65;
-        this.invulnTimer = 0.42;
+        if (this.stamina < 18) return;
+        this.stamina = Math.max(0, this.stamina - 18);
+        this.invulnTimer = 0.55;
         SoundFX.dodge();
-
-        const moveDir = Input.getMoveVector(CameraCtrl.yaw);
-        const dashDir = moveDir.lengthSq() > 0.01 ? moveDir : new THREE.Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
-        this.vel.x = dashDir.x * 28;
-        this.vel.z = dashDir.z * 28;
-
-        Enemies.list.forEach(en => {
-            if (en.hp > 0 && en.state === 'windup' && en.pos.distanceTo(this.pos) < 6.0) {
-                Party.active.forte = Math.min(100, Party.active.forte + 40);
-                Game.timeScale = 0.35;
-                setTimeout(() => { Game.timeScale = 1.0; }, 220);
-                UI.flashScreen('#38bdf8', 0.3);
-                UI.toast('ESQUIVA PERFEITA! +40% Forte Circuit');
-            }
-        });
-
-        const cls = GAME_DATA.classes.find(c => c.id === Party.active.classId);
-        Combat.spawnShockwave(this.pos, cls.color, 2.8);
+        const forward = new THREE.Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
+        this.vel.x = forward.x * 24;
+        this.vel.z = forward.z * 24;
+        Combat.spawnShockwave(this.pos, '#38bdf8', 3.5);
     },
 
     update(dt) {
         const m = Party.active;
         if (m.cdE > 0) m.cdE = Math.max(0, m.cdE - dt);
         if (m.cdR > 0) m.cdR = Math.max(0, m.cdR - dt);
-        if (this.dodgeCooldown > 0) this.dodgeCooldown -= dt;
         if (this.invulnTimer > 0) this.invulnTimer -= dt;
         if (this.attackAnimTimer > 0) this.attackAnimTimer -= dt;
 
-        if (this.isGliding && this.stamina > 0) {
-            this.stamina = Math.max(0, this.stamina - dt * 10);
-            if (this.stamina <= 0) this.isGliding = false;
-        } else if (this.dodgeTimer <= 0) {
-            this.stamina = Math.min(100, this.stamina + dt * 18);
-        }
+        const moveDir = Input.getMoveVector(CameraCtrl.yaw);
+        const speed = this.isGliding ? 14.5 : (Input.keys['ShiftLeft'] ? 14.0 : 10.2);
 
-        const moveVec = Input.getMoveVector(CameraCtrl.yaw);
-        const agiSpeed = (11.5 + m.stats.agi * 0.16) * (this.isGliding ? 1.25 : 1.0);
+        if (moveDir.lengthSq() > 0.001) {
+            const targetYaw = Math.atan2(moveDir.x, moveDir.z);
+            let diff = targetYaw - this.yaw;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            this.yaw += diff * Math.min(1, dt * 14);
 
-        if (this.dodgeTimer > 0) {
-            this.dodgeTimer -= dt;
-        } else if (moveVec.lengthSq() > 0.001) {
-            this.vel.x = moveVec.x * agiSpeed;
-            this.vel.z = moveVec.z * agiSpeed;
-            const targetYaw = Math.atan2(moveVec.x, moveVec.z);
-            this.yaw = Math.atan2(
-                Math.sin(this.yaw) + (Math.sin(targetYaw) - Math.sin(this.yaw)) * Math.min(1, dt * 14),
-                Math.cos(this.yaw) + (Math.cos(targetYaw) - Math.cos(this.yaw)) * Math.min(1, dt * 14)
-            );
+            this.vel.x = THREE.MathUtils.lerp(this.vel.x, moveDir.x * speed, dt * 10);
+            this.vel.z = THREE.MathUtils.lerp(this.vel.z, moveDir.z * speed, dt * 10);
         } else {
-            this.vel.x *= Math.pow(0.001, dt);
-            this.vel.z *= Math.pow(0.001, dt);
+            this.vel.x = THREE.MathUtils.lerp(this.vel.x, 0, dt * 10);
+            this.vel.z = THREE.MathUtils.lerp(this.vel.z, 0, dt * 10);
         }
 
-        if (CameraCtrl.isAiming || this.attackAnimTimer > 0) {
-            if (Combat.lockedTarget && Combat.lockedTarget.hp > 0) {
-                const dx = Combat.lockedTarget.pos.x - this.pos.x;
-                const dz = Combat.lockedTarget.pos.z - this.pos.z;
-                this.yaw = Math.atan2(dx, dz);
-            } else if (CameraCtrl.isAiming) {
-                this.yaw = CameraCtrl.yaw + Math.PI;
+        if (CameraCtrl.isAiming) {
+            this.yaw = CameraCtrl.yaw + Math.PI;
+        }
+
+        if (this.isGliding) {
+            this.stamina = Math.max(0, this.stamina - dt * 12);
+            this.vel.y = Math.max(-2.4, this.vel.y - 12 * dt);
+            if (this.stamina <= 0) this.isGliding = false;
+        } else {
+            this.vel.y -= 34 * dt;
+            if (this.isGrounded) {
+                this.stamina = Math.min(100, this.stamina + dt * 24);
             }
         }
 
-        if (this.isGliding && this.vel.y < -2.6) {
-            this.vel.y = -2.6;
-        } else {
-            this.vel.y -= 28.0 * dt;
-        }
-
         this.pos.addScaledVector(this.vel, dt);
-
         this.pos.x = THREE.MathUtils.clamp(this.pos.x, -540, 540);
         this.pos.z = THREE.MathUtils.clamp(this.pos.z, -540, 540);
 
-        const groundY = Math.max(GAME_DATA.waterLevel - 0.4, WorldMath.getTerrainHeight(this.pos.x, this.pos.z));
+        const groundY = Math.max(GAME_DATA.waterLevel - 0.3, WorldMath.getTerrainHeight(this.pos.x, this.pos.z));
         if (this.pos.y <= groundY) {
             this.pos.y = groundY;
             this.vel.y = 0;
-            this.grounded = true;
-            this.jumpsRemaining = 2;
+            this.isGrounded = true;
             this.isGliding = false;
+            this.jumpCount = 0;
+        } else {
+            this.isGrounded = false;
         }
 
         if (this.mesh) {
@@ -2270,31 +2309,27 @@ const Player = {
             this.mesh.rotation.y = this.yaw;
 
             const rig = this.mesh.userData.rig;
+            const horizSpeed = Math.hypot(this.vel.x, this.vel.z);
             if (rig.gliderGroup) rig.gliderGroup.visible = this.isGliding;
 
-            const horizSpeed = Math.hypot(this.vel.x, this.vel.z);
-            this.animTime += dt * (horizSpeed > 0.5 ? horizSpeed * 1.15 : 2.5);
-
-            if (horizSpeed > 0.6 && this.grounded) {
-                const swing = Math.sin(this.animTime) * 0.65;
-                rig.leftLeg.rotation.x = swing;
-                rig.rightLeg.rotation.x = -swing;
-                rig.leftArm.rotation.x = -swing * 0.6;
-                rig.hips.position.y = 0.95 + Math.abs(Math.cos(this.animTime)) * 0.06;
+            if (horizSpeed > 0.6 && this.isGrounded) {
+                this.walkCycle += dt * horizSpeed * 1.4;
+                rig.leftLeg.rotation.x = Math.sin(this.walkCycle) * 0.65;
+                rig.rightLeg.rotation.x = -Math.sin(this.walkCycle) * 0.65;
+                rig.leftArm.rotation.x = -Math.sin(this.walkCycle) * 0.45;
+                if (this.attackAnimTimer <= 0) {
+                    rig.rightArm.rotation.x = Math.sin(this.walkCycle) * 0.45;
+                }
             } else {
-                rig.leftLeg.rotation.x *= 0.85;
-                rig.rightLeg.rotation.x *= 0.85;
-                rig.leftArm.rotation.x = Math.sin(this.animTime) * 0.06;
-                rig.hips.position.y = 0.95 + Math.sin(this.animTime) * 0.025;
+                rig.leftLeg.rotation.x = THREE.MathUtils.lerp(rig.leftLeg.rotation.x, 0, dt * 10);
+                rig.rightLeg.rotation.x = THREE.MathUtils.lerp(rig.rightLeg.rotation.x, 0, dt * 10);
+                rig.leftArm.rotation.x = THREE.MathUtils.lerp(rig.leftArm.rotation.x, 0, dt * 10);
             }
 
             if (this.attackAnimTimer > 0) {
-                const phase = (0.32 - this.attackAnimTimer) / 0.32;
-                rig.rightArm.rotation.x = -Math.PI * 0.75 + Math.sin(phase * Math.PI) * 1.9;
-                rig.rightArm.rotation.z = Math.sin(phase * Math.PI * 2) * 0.4;
-            } else {
-                rig.rightArm.rotation.x = (horizSpeed > 0.6 && this.grounded) ? Math.sin(this.animTime) * 0.6 : -0.15;
-                rig.rightArm.rotation.z = 0;
+                rig.rightArm.rotation.x = -1.45 + Math.sin(this.attackAnimTimer * 24) * 0.8;
+            } else if (horizSpeed <= 0.6) {
+                rig.rightArm.rotation.x = THREE.MathUtils.lerp(rig.rightArm.rotation.x, 0, dt * 10);
             }
         }
     }
@@ -2303,72 +2338,67 @@ const Player = {
 const CameraCtrl = {
     yaw: 0,
     pitch: 0.28,
-    distance: 7.2,
-    isAiming: false,
+    distance: 6.8,
     sensitivity: 1.0,
-    shakeIntensity: 0,
+    isAiming: false,
+    shake: 0,
+
+    addShake(amount) {
+        this.shake = Math.min(1.2, this.shake + amount);
+    },
 
     toggleAim(forceState) {
         this.isAiming = typeof forceState === 'boolean' ? forceState : !this.isAiming;
         const ring = document.getElementById('crosshair-ring');
         if (ring) {
-            if (this.isAiming) {
-                ring.classList.add('scale-150', 'border-rose-400');
-                Combat.acquireTarget();
-            } else {
-                ring.classList.remove('scale-150', 'border-rose-400');
-            }
+            ring.style.transform = this.isAiming ? 'scale(1.5)' : 'scale(1)';
+            ring.style.borderColor = this.isAiming ? '#fde047' : 'rgba(255,255,255,0.4)';
         }
-    },
-
-    addShake(amount) {
-        this.shakeIntensity = Math.max(this.shakeIntensity, amount);
     },
 
     update(dt) {
         if (Game.state === 'CREATOR') {
-            Creator.previewYaw += dt * 0.25;
+            if (!Creator.isDragging) Creator.previewYaw += dt * 0.35;
             if (Engine.previewHeroMesh) {
                 Engine.previewHeroMesh.rotation.y = Creator.previewYaw;
             }
-            const pPos = Engine.previewPlatform.position;
-            Engine.camera.position.set(pPos.x, pPos.y + 1.55, pPos.z + 3.45);
-            Engine.camera.lookAt(pPos.x, pPos.y + 1.25, pPos.z);
+            const plat = Engine.previewPlatform.position;
+            Engine.camera.position.set(plat.x, plat.y + 1.45, plat.z + 3.4);
+            Engine.camera.lookAt(plat.x, plat.y + 1.15, plat.z);
             return;
         }
 
-        const targetDist = this.isAiming ? 3.8 : 7.4;
-        this.distance += (targetDist - this.distance) * Math.min(1, dt * 10);
+        const dist = this.isAiming ? 2.6 : this.distance;
+        const target = Player.pos.clone().add(new THREE.Vector3(0, this.isAiming ? 1.65 : 1.45, 0));
 
-        const pivot = Player.pos.clone().add(new THREE.Vector3(0, 1.55, 0));
         if (this.isAiming) {
-            const rightVec = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
-            pivot.addScaledVector(rightVec, 0.72);
+            const rightOffset = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)).multiplyScalar(0.65);
+            target.add(rightOffset);
         }
 
-        const offset = new THREE.Vector3(
-            Math.sin(this.yaw) * Math.cos(this.pitch) * this.distance,
-            Math.sin(this.pitch) * this.distance,
-            Math.cos(this.yaw) * Math.cos(this.pitch) * this.distance
+        const camOffset = new THREE.Vector3(
+            Math.sin(this.yaw) * Math.cos(this.pitch) * dist,
+            Math.sin(this.pitch) * dist,
+            Math.cos(this.yaw) * Math.cos(this.pitch) * dist
         );
 
-        const camPos = pivot.clone().add(offset);
-        const minCamY = WorldMath.getTerrainHeight(camPos.x, camPos.z) + 0.8;
-        if (camPos.y < minCamY) camPos.y = minCamY;
+        const desiredPos = target.clone().add(camOffset);
+        const minTerrainY = WorldMath.getTerrainHeight(desiredPos.x, desiredPos.z) + 0.8;
+        if (desiredPos.y < minTerrainY) desiredPos.y = minTerrainY;
 
-        if (this.shakeIntensity > 0.001) {
-            camPos.x += (Math.random() - 0.5) * this.shakeIntensity;
-            camPos.y += (Math.random() - 0.5) * this.shakeIntensity;
-            this.shakeIntensity *= Math.pow(0.02, dt);
+        if (this.shake > 0) {
+            desiredPos.x += (Math.random() - 0.5) * this.shake;
+            desiredPos.y += (Math.random() - 0.5) * this.shake;
+            this.shake = Math.max(0, this.shake - dt * 2.5);
         }
 
-        Engine.camera.position.copy(camPos);
-        Engine.camera.lookAt(pivot);
+        Engine.camera.position.lerp(desiredPos, Math.min(1, dt * 16));
+        Engine.camera.lookAt(target);
     }
 };
 
 // ----------------------------------------------------------------------------
-// 10. COMBAT SYSTEM (4-HIT COMBOS, PARRY, FORTE CIRCUIT, SKILLS, ULTIMATES)
+// 10. REAL-TIME ACTION COMBAT, PARRY, PROJECTILES & VFX
 // ----------------------------------------------------------------------------
 const Combat = {
     comboStep: 0,
@@ -2376,235 +2406,252 @@ const Combat = {
     hitCount: 0,
     hitDisplayTimer: 0,
     lockedTarget: null,
+    isHoldingAttack: false,
+    holdTimer: 0,
     projectiles: [],
     vfxList: [],
-    holdTimer: 0,
-    isHoldingAttack: false,
+    drops: [],
+    lockRing: null,
+
+    initVisuals() {
+        if (this.lockRing) Engine.scene.remove(this.lockRing);
+        const geo = new THREE.RingGeometry(1.3, 1.55, 32);
+        geo.rotateX(-Math.PI / 2);
+        const mat = new THREE.MeshBasicMaterial({ color: '#fde047', side: THREE.DoubleSide, transparent: true, opacity: 0.85 });
+        this.lockRing = new THREE.Mesh(geo, mat);
+        this.lockRing.visible = false;
+        Engine.scene.add(this.lockRing);
+    },
 
     calcDamage(multiplier = 1.0) {
         const m = Party.active;
         const cls = GAME_DATA.classes.find(c => c.id === m.classId);
-        const primary = cls.weapon === 'staff' ? m.stats.int : (cls.weapon === 'bow' || cls.weapon === 'pistols' ? m.stats.agi : m.stats.str);
-        let dmg = (28 + primary * 5.2 + m.level * 8) * multiplier;
+        let base = 45 + m.level * 14;
+        if (cls.weapon === 'sword') base += m.stats.str * 6.5;
+        else if (cls.weapon === 'staff') base += m.stats.int * 7.2;
+        else base += m.stats.agi * 6.8;
 
         if (cls.id === 'fusion_berserker') {
-            const missingRatio = 1 - (m.hp / m.maxHp);
-            dmg *= (1 + missingRatio * 0.55);
+            const missingHpRatio = 1 - m.hp / m.maxHp;
+            base *= 1 + missingHpRatio * 0.55;
         }
 
-        const critChance = 0.12 + m.stats.agi * 0.008;
-        const isCrit = Math.random() < critChance;
-        if (isCrit) dmg *= (CameraCtrl.isAiming && cls.id === 'aero_archer') ? 2.25 : 1.65;
-
-        return { amount: Math.round(dmg), isCrit };
+        const critRate = Math.min(0.85, 0.12 + m.stats.agi * 0.008);
+        const isCrit = Math.random() < critRate;
+        const critMult = isCrit ? 1.75 : 1.0;
+        const variance = 0.92 + Math.random() * 0.16;
+        return {
+            amount: Math.round(base * multiplier * critMult * variance),
+            isCrit
+        };
     },
 
     acquireTarget() {
         let best = null;
-        let minD = 32;
-        Enemies.list.forEach(en => {
-            if (en.hp <= 0) return;
+        let bestDist = 34;
+        for (const en of Enemies.list) {
+            if (en.hp <= 0) continue;
             const d = en.pos.distanceTo(Player.pos);
-            if (d < minD) {
-                minD = d;
+            if (d < bestDist) {
+                bestDist = d;
                 best = en;
             }
-        });
+        }
         this.lockedTarget = best;
         return best;
     },
 
     triggerBasicAttack() {
-        if (Game.state !== 'PLAYING') return;
         const m = Party.active;
         const cls = GAME_DATA.classes.find(c => c.id === m.classId);
-
-        this.acquireTarget();
-        Player.attackAnimTimer = 0.32;
         this.comboStep = (this.comboStep % 4) + 1;
-        this.comboResetTimer = 1.4;
+        this.comboResetTimer = 1.6;
+        Player.attackAnimTimer = 0.32;
 
-        let parried = false;
-        Enemies.list.forEach(en => {
-            if (en.hp > 0 && en.parryWindow > 0 && en.pos.distanceTo(Player.pos) < 7.5) {
-                parried = true;
-                en.parryWindow = 0;
-                en.state = 'staggered';
-                en.stateTimer = 2.4;
-                en.stagger = Math.max(0, en.stagger - 45);
-                SoundFX.parry();
-                CameraCtrl.addShake(0.65);
-                this.spawnShockwave(en.pos, '#fde047', 8.5);
-                UI.flashScreen('#fbbf24', 0.42);
-                UI.toast('PARRY CINEMÁTICO! Postura Quebrada!');
+        const target = this.acquireTarget();
 
-                if (cls.id === 'spectro_paladin') {
-                    m.hp = Math.min(m.maxHp, m.hp + Math.round(m.maxHp * 0.12));
-                }
-
-                Game.timeScale = 0.18;
-                setTimeout(() => { Game.timeScale = 1.0; }, 260);
+        if (cls.weapon === 'bow' || cls.weapon === 'pistols' || cls.weapon === 'staff') {
+            SoundFX.shoot();
+            const origin = Player.pos.clone().add(new THREE.Vector3(0, 1.4, 0));
+            let dir;
+            if (target && !CameraCtrl.isAiming) {
+                dir = target.pos.clone().add(new THREE.Vector3(0, 1.2, 0)).sub(origin).normalize();
+            } else {
+                dir = new THREE.Vector3(
+                    -Math.sin(CameraCtrl.yaw) * Math.cos(CameraCtrl.pitch),
+                    -Math.sin(CameraCtrl.pitch),
+                    -Math.cos(CameraCtrl.yaw) * Math.cos(CameraCtrl.pitch)
+                ).normalize();
             }
-        });
-        if (parried) return;
-
-        const mult = 0.85 + this.comboStep * 0.22;
-        if (cls.weapon === 'sword') {
+            const mult = (cls.id === 'aero_archer' && CameraCtrl.isAiming) ? 1.55 : (0.85 + this.comboStep * 0.18);
+            this.spawnProjectile(origin, dir, cls.color, this.calcDamage(mult));
+        } else {
             SoundFX.slash(this.comboStep);
             const forward = new THREE.Vector3(Math.sin(Player.yaw), 0, Math.cos(Player.yaw));
-            const hitCenter = Player.pos.clone().addScaledVector(forward, 2.2);
-            this.spawnSlashArc(hitCenter, Player.yaw, cls.color, 2.2 + this.comboStep * 0.35);
-            this.damageEnemiesInRadius(hitCenter, 3.8, this.calcDamage(mult), cls.color);
-        } else {
-            SoundFX.shoot();
-            const dir = this.getAimDirection();
-            const count = (cls.weapon === 'pistols' && this.comboStep === 4) ? 3 : 1;
-            for (let i = 0; i < count; i++) {
-                const spread = dir.clone();
-                if (count > 1) spread.x += (i - 1) * 0.12;
-                this.spawnProjectile(Player.pos.clone().add(new THREE.Vector3(0, 1.35, 0)), spread.normalize(), 46, this.calcDamage(mult), cls.color);
-            }
+            const slashPos = Player.pos.clone().addScaledVector(forward, 1.8).add(new THREE.Vector3(0, 1.2, 0));
+            this.spawnSlashArc(slashPos, Player.yaw, cls.color, this.comboStep);
+
+            Enemies.list.forEach(en => {
+                if (en.hp <= 0) return;
+                const d = en.pos.distanceTo(Player.pos);
+                if (d < 4.6) {
+                    if (en.parryWindow > 0) {
+                        this.executeParry(en);
+                        return;
+                    }
+                    const dmgObj = this.calcDamage(0.8 + this.comboStep * 0.25);
+                    this.applyDamageToEnemy(en, dmgObj, cls.color);
+                    m.forte = Math.min(100, m.forte + (cls.id === 'aero_warrior' ? 18 : 14));
+                    m.energy = Math.min(100, m.energy + 10);
+                }
+            });
         }
     },
 
     triggerHeavyForteAttack() {
         const m = Party.active;
         const cls = GAME_DATA.classes.find(c => c.id === m.classId);
-        if (m.forte < 100) {
-            UI.toast(`Forte Circuit em ${Math.round(m.forte)}% (Requer 100%)`);
-            return;
-        }
-        m.forte = 0;
+        SoundFX.skill();
         Player.attackAnimTimer = 0.45;
-        SoundFX.ultimate();
-        CameraCtrl.addShake(0.55);
-        this.spawnShockwave(Player.pos, cls.color, 9.5);
-        this.damageEnemiesInRadius(Player.pos, 9.5, this.calcDamage(3.2), cls.color, 'FORTE CIRCUIT!');
-        UI.flashScreen(cls.color, 0.3);
+        const fullForte = m.forte >= 100;
+        if (fullForte) m.forte = 0;
+
+        const mult = fullForte ? 3.2 : 1.75;
+        this.spawnShockwave(Player.pos, cls.color, fullForte ? 9.5 : 5.5);
+        CameraCtrl.addShake(fullForte ? 0.45 : 0.22);
+
+        Enemies.list.forEach(en => {
+            if (en.hp > 0 && en.pos.distanceTo(Player.pos) < (fullForte ? 9.5 : 6.0)) {
+                const dmgObj = this.calcDamage(mult);
+                this.applyDamageToEnemy(en, dmgObj, cls.color, fullForte ? 'FORTE CIRCUIT!' : 'CARREGADO');
+            }
+        });
     },
 
     triggerResonanceSkill() {
         const m = Party.active;
         if (m.cdE > 0) return;
         const cls = GAME_DATA.classes.find(c => c.id === m.classId);
-        m.cdE = cls.id === 'electro_mage' ? 3.5 : 5.0;
+        m.cdE = cls.id === 'electro_mage' ? 4.5 : 6.0;
         m.forte = Math.min(100, m.forte + 35);
-        m.energy = Math.min(100, m.energy + 30);
+        m.energy = Math.min(100, m.energy + 25);
 
-        Player.attackAnimTimer = 0.4;
         SoundFX.skill();
-        CameraCtrl.addShake(0.35);
+        Player.attackAnimTimer = 0.4;
+        this.spawnShockwave(Player.pos, cls.color, 8.0);
+        CameraCtrl.addShake(0.32);
 
-        const targetPos = (this.lockedTarget && this.lockedTarget.hp > 0)
-            ? this.lockedTarget.pos.clone()
-            : Player.pos.clone().addScaledVector(new THREE.Vector3(Math.sin(Player.yaw), 0, Math.cos(Player.yaw)), 5.0);
-
-        this.spawnShockwave(targetPos, cls.color, 6.5);
-        this.damageEnemiesInRadius(targetPos, 6.5, this.calcDamage(2.25), cls.color, 'SKILL [E]');
+        Enemies.list.forEach(en => {
+            if (en.hp > 0 && en.pos.distanceTo(Player.pos) < 8.5) {
+                if (en.parryWindow > 0) this.executeParry(en);
+                const dmgObj = this.calcDamage(2.35);
+                this.applyDamageToEnemy(en, dmgObj, cls.color, 'SKILL [E]');
+            }
+        });
     },
 
     triggerLiberation() {
         const m = Party.active;
         if (m.cdR > 0 || m.energy < 100) {
-            UI.toast('Energia de Ressonância insuficiente!');
+            UI.toast('Energia de Ressonância insuficiente (100% necessária)');
             return;
         }
         const cls = GAME_DATA.classes.find(c => c.id === m.classId);
-        m.cdR = 10.0;
         m.energy = 0;
+        m.cdR = 12.0;
         m.forte = 100;
-        Player.invulnTimer = 1.4;
+        Player.invulnTimer = 1.6;
 
         SoundFX.ultimate();
-        CameraCtrl.addShake(0.85);
-        UI.flashScreen(cls.color, 0.48);
+        UI.flashScreen(cls.color, 0.45);
+        CameraCtrl.addShake(0.65);
+        this.spawnShockwave(Player.pos, cls.color, 16.0);
         UI.toast(`LIBERAÇÃO DE RESSONÂNCIA: ${cls.name.toUpperCase()}!`);
 
-        this.spawnShockwave(Player.pos, cls.color, 15.0);
-        this.damageEnemiesInRadius(Player.pos, 15.0, this.calcDamage(4.6), cls.color, 'LIBERATION!');
-    },
-
-    getAimDirection() {
-        if (this.lockedTarget && this.lockedTarget.hp > 0) {
-            return this.lockedTarget.pos.clone().add(new THREE.Vector3(0, 1.2, 0))
-                .sub(Player.pos.clone().add(new THREE.Vector3(0, 1.35, 0))).normalize();
-        }
-        const dir = new THREE.Vector3();
-        Engine.camera.getWorldDirection(dir);
-        dir.y = Math.max(-0.35, Math.min(0.35, dir.y));
-        return dir.normalize();
-    },
-
-    damageEnemiesInRadius(center, radius, dmgObj, color, label = '') {
-        let hitAny = false;
         Enemies.list.forEach(en => {
-            if (en.hp <= 0) return;
-            if (en.pos.distanceTo(center) <= radius + en.radius) {
-                hitAny = true;
-                this.applyDamageToEnemy(en, dmgObj, color, label);
+            if (en.hp > 0 && en.pos.distanceTo(Player.pos) < 16.5) {
+                const dmgObj = this.calcDamage(4.8);
+                this.applyDamageToEnemy(en, dmgObj, '#fde047', 'LIBERATION!');
+                en.stagger = Math.max(0, en.stagger - 60);
             }
         });
-        if (hitAny) {
-            const m = Party.active;
-            const cls = GAME_DATA.classes.find(c => c.id === m.classId);
-            m.forte = Math.min(100, m.forte + (cls.id === 'aero_warrior' ? 18 : 12));
-            m.energy = Math.min(100, m.energy + 10);
-        }
     },
 
-    applyDamageToEnemy(en, dmgObj, color, label = '') {
-        en.hp = Math.max(0, en.hp - dmgObj.amount);
-        en.stagger = Math.max(0, en.stagger - (dmgObj.isCrit ? 18 : 10));
-        this.lockedTarget = en;
+    executeParry(enemy) {
+        enemy.parryWindow = 0;
+        enemy.state = 'staggered';
+        enemy.stateTimer = 2.4;
+        enemy.stagger = Math.max(0, enemy.stagger - 50);
+
+        SoundFX.parry();
+        UI.flashScreen('#fef08a', 0.48);
+        CameraCtrl.addShake(0.5);
+        this.spawnShockwave(enemy.pos, '#fde047', 7.5);
+        UI.spawnDamageNumber(enemy.pos.clone().add(new THREE.Vector3(0, 2.6, 0)), 'PARRY!', true, '#fde047', 'CONTRA-ATAQUE');
+
+        const m = Party.active;
+        m.forte = Math.min(100, m.forte + 45);
+        if (m.classId === 'spectro_paladin') {
+            m.hp = Math.min(m.maxHp, m.hp + Math.round(m.maxHp * 0.12));
+        }
+
+        Game.timeScale = 0.25;
+        setTimeout(() => { Game.timeScale = 1.0; }, 190);
+    },
+
+    applyDamageToEnemy(enemy, dmgObj, color, label = '') {
+        enemy.hp = Math.max(0, enemy.hp - dmgObj.amount);
+        enemy.stagger = Math.max(0, enemy.stagger - (dmgObj.isCrit ? 18 : 11));
+        this.lockedTarget = enemy;
+        this.hitCount++;
+        this.hitDisplayTimer = 2.8;
+
+        SoundFX.hit(dmgObj.isCrit);
+        this.spawnHitSparks(enemy.pos.clone().add(new THREE.Vector3(0, 1.4, 0)), color);
+        UI.spawnDamageNumber(enemy.pos.clone().add(new THREE.Vector3(0, 2.2, 0)), dmgObj.amount, dmgObj.isCrit, color, label);
 
         const m = Party.active;
         if (m.classId === 'havoc_necro') {
             m.hp = Math.min(m.maxHp, m.hp + Math.round(dmgObj.amount * 0.08));
         }
 
-        this.hitCount++;
-        this.hitDisplayTimer = 2.6;
-        SoundFX.hit(dmgObj.isCrit);
-        this.spawnImpactSparks(en.pos.clone().add(new THREE.Vector3(0, 1.4, 0)), color);
-        UI.spawnDamageNumber(en.pos.clone().add(new THREE.Vector3(0, 2.5, 0)), dmgObj.amount, dmgObj.isCrit, color, label);
-
-        if (en.hp <= 0) {
-            Enemies.onEnemyDefeated(en);
+        if (enemy.hp <= 0) {
+            Enemies.onEnemyDefeated(enemy);
         }
     },
 
-    spawnProjectile(origin, dir, speed, dmgObj, color) {
+    spawnProjectile(origin, dir, color, dmgObj) {
         const mesh = new THREE.Mesh(
             new THREE.SphereGeometry(0.22, 10, 10),
             new THREE.MeshBasicMaterial({ color })
         );
         mesh.position.copy(origin);
         Engine.scene.add(mesh);
-        this.projectiles.push({ mesh, dir, speed, dmgObj, color, life: 1.4 });
+        this.projectiles.push({ mesh, dir, speed: 46, life: 1.4, color, dmgObj });
     },
 
-    spawnSlashArc(pos, yaw, color, scale = 2.5) {
-        const geo = new THREE.RingGeometry(scale * 0.55, scale, 24, 1, 0, Math.PI * 0.85);
+    spawnSlashArc(pos, yaw, color, step) {
+        const geo = new THREE.RingGeometry(1.1, 2.3, 24, 1, -0.9, 1.8);
+        const mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.9 });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.copy(pos);
+        mesh.rotation.x = Math.PI / 2 + (step % 2 === 0 ? 0.35 : -0.35);
+        mesh.rotation.z = -yaw + Math.PI / 2;
+        Engine.scene.add(mesh);
+        this.vfxList.push({ mesh, life: 0.24, maxLife: 0.24, grow: 4.5 });
+    },
+
+    spawnShockwave(pos, color, maxRadius) {
+        const geo = new THREE.RingGeometry(0.4, 0.9, 32);
         geo.rotateX(-Math.PI / 2);
         const mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.9 });
         const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(pos.x, pos.y + 1.15, pos.z);
-        mesh.rotation.y = yaw - Math.PI * 0.42;
-        Engine.scene.add(mesh);
-        this.vfxList.push({ mesh, life: 0.24, maxLife: 0.24, grow: 1.4 });
-    },
-
-    spawnShockwave(pos, color, maxRadius = 6.0) {
-        const geo = new THREE.RingGeometry(0.4, maxRadius, 32);
-        geo.rotateX(-Math.PI / 2);
-        const mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.85 });
-        const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(pos.x, pos.y + 0.35, pos.z);
         Engine.scene.add(mesh);
-        this.vfxList.push({ mesh, life: 0.42, maxLife: 0.42, grow: 1.35 });
+        this.vfxList.push({ mesh, life: 0.42, maxLife: 0.42, grow: maxRadius * 3.2 });
     },
 
-    spawnImpactSparks(pos, color) {
+    spawnHitSparks(pos, color) {
         const count = 14;
         const geo = new THREE.BufferGeometry();
         const positions = new Float32Array(count * 3);
@@ -2613,13 +2660,35 @@ const Combat = {
             positions[i * 3] = pos.x;
             positions[i * 3 + 1] = pos.y;
             positions[i * 3 + 2] = pos.z;
-            vels.push(new THREE.Vector3((Math.random() - 0.5) * 12, Math.random() * 8 + 2, (Math.random() - 0.5) * 12));
+            vels.push(new THREE.Vector3((Math.random() - 0.5) * 10, 3 + Math.random() * 6, (Math.random() - 0.5) * 10));
         }
         geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         const mat = new THREE.PointsMaterial({ color, size: 0.32, transparent: true, opacity: 1 });
         const points = new THREE.Points(geo, mat);
         Engine.scene.add(points);
         this.vfxList.push({ points, vels, life: 0.35, maxLife: 0.35 });
+    },
+
+    spawnEchoDrop(pos, isBoss = false) {
+        const count = isBoss ? 4 : 1;
+        for (let i = 0; i < count; i++) {
+            const mesh = new THREE.Mesh(
+                new THREE.OctahedronGeometry(isBoss ? 0.42 : 0.28, 0),
+                new THREE.MeshBasicMaterial({ color: isBoss ? '#fde047' : '#34d399' })
+            );
+            mesh.position.set(
+                pos.x + (Math.random() - 0.5) * 2.5,
+                pos.y + 0.9,
+                pos.z + (Math.random() - 0.5) * 2.5
+            );
+            Engine.scene.add(mesh);
+            this.drops.push({
+                mesh,
+                heal: isBoss ? 220 : 85,
+                energy: isBoss ? 25 : 14,
+                life: 30
+            });
+        }
     },
 
     update(dt) {
@@ -2685,6 +2754,44 @@ const Combat = {
                 if (v.life <= 0) Engine.scene.remove(v.points);
             }
             if (v.life <= 0) this.vfxList.splice(i, 1);
+        }
+
+        // Update magnetic Echo Drops (HP & Resonance Energy)
+        for (let i = this.drops.length - 1; i >= 0; i--) {
+            const d = this.drops[i];
+            d.life -= dt;
+            d.mesh.rotation.y += dt * 3.2;
+            const targetPos = Player.pos.clone().add(new THREE.Vector3(0, 1.0, 0));
+            const dist = d.mesh.position.distanceTo(targetPos);
+
+            if (dist < 11.0) {
+                d.mesh.position.lerp(targetPos, Math.min(1, dt * 8.5));
+            }
+            if (dist < 1.35) {
+                const m = Party.active;
+                m.hp = Math.min(m.maxHp, m.hp + d.heal);
+                m.energy = Math.min(100, m.energy + d.energy);
+                SoundFX.switchHero();
+                Engine.scene.remove(d.mesh);
+                this.drops.splice(i, 1);
+                continue;
+            }
+            if (d.life <= 0) {
+                Engine.scene.remove(d.mesh);
+                this.drops.splice(i, 1);
+            }
+        }
+
+        // Update 3D Lock-On Ring under active target
+        if (this.lockRing) {
+            if (this.lockedTarget && this.lockedTarget.hp > 0 && this.lockedTarget.pos.distanceTo(Player.pos) < 38) {
+                this.lockRing.visible = true;
+                this.lockRing.position.set(this.lockedTarget.pos.x, this.lockedTarget.pos.y + 0.18, this.lockedTarget.pos.z);
+                this.lockRing.scale.setScalar(this.lockedTarget.scale * (1 + Math.sin(Engine.clock.getElapsedTime() * 8) * 0.08));
+                this.lockRing.rotation.z += dt * 1.8;
+            } else {
+                this.lockRing.visible = false;
+            }
         }
     }
 };
@@ -2784,6 +2891,7 @@ const Enemies = {
     onEnemyDefeated(en) {
         SoundFX.ultimate();
         Combat.spawnShockwave(en.pos, en.color, en.isBoss ? 12 : 6);
+        Combat.spawnEchoDrop(en.pos, en.isBoss);
         Party.gainExp(en.isBoss ? 320 : 65);
         en.mesh.visible = false;
         en.respawnTimer = en.isBoss ? 45 : 22;
@@ -2895,6 +3003,11 @@ const Input = {
             if (e.code === 'F3' || e.code === 'Digit3') { e.preventDefault(); Party.switchTo(2); }
             if (e.code === 'KeyM') UI.toggleModal('map-modal');
             if (e.code === 'KeyC') UI.toggleModal('char-modal');
+            if (e.code === 'KeyO') UI.toggleModal('coop-modal');
+            if (e.code === 'Enter') {
+                e.preventDefault();
+                document.getElementById('coop-chat-input')?.focus();
+            }
             if (e.code === 'Escape') UI.toggleModal('settings-modal');
         });
 
@@ -2985,6 +3098,23 @@ const Input = {
                 CameraCtrl.distance = THREE.MathUtils.clamp(CameraCtrl.distance + e.deltaY * 0.005, 3.8, 14.0);
             }
         }, { passive: true });
+
+        // Virtual touch D-pad & jump bindings
+        document.querySelectorAll('.vjoy-btn').forEach(btn => {
+            const code = btn.dataset.vkey;
+            const press = e => { e.preventDefault(); this.keys[code] = true; };
+            const release = e => { e.preventDefault(); this.keys[code] = false; };
+            btn.addEventListener('touchstart', press, { passive: false });
+            btn.addEventListener('touchend', release, { passive: false });
+            btn.addEventListener('mousedown', press);
+            btn.addEventListener('mouseup', release);
+            btn.addEventListener('mouseleave', release);
+        });
+
+        document.getElementById('btn-mobile-jump')?.addEventListener('touchstart', e => {
+            e.preventDefault();
+            if (Game.state === 'PLAYING') Player.jump();
+        }, { passive: false });
     },
 
     getMoveVector(camYaw) {
@@ -3016,10 +3146,12 @@ const UI = {
     bindHUDButtons() {
         document.getElementById('btn-open-map')?.addEventListener('click', () => this.toggleModal('map-modal'));
         document.getElementById('btn-open-char')?.addEventListener('click', () => this.toggleModal('char-modal'));
+        document.getElementById('btn-open-coop')?.addEventListener('click', () => this.toggleModal('coop-modal'));
         document.getElementById('btn-open-settings')?.addEventListener('click', () => this.toggleModal('settings-modal'));
 
         document.getElementById('btn-close-map')?.addEventListener('click', () => this.toggleModal('map-modal'));
         document.getElementById('btn-close-char')?.addEventListener('click', () => this.toggleModal('char-modal'));
+        document.getElementById('btn-close-coop')?.addEventListener('click', () => this.toggleModal('coop-modal'));
         document.getElementById('btn-close-settings')?.addEventListener('click', () => this.toggleModal('settings-modal'));
 
         document.getElementById('skill-btn-atk')?.addEventListener('click', () => Combat.triggerBasicAttack());
@@ -3074,11 +3206,12 @@ const UI = {
         const el = document.getElementById(id);
         if (!el) return;
         const willOpen = el.classList.contains('hidden');
-        ['map-modal', 'char-modal', 'settings-modal'].forEach(m => document.getElementById(m)?.classList.add('hidden'));
+        ['map-modal', 'char-modal', 'settings-modal', 'coop-modal'].forEach(m => document.getElementById(m)?.classList.add('hidden'));
         if (willOpen) {
             el.classList.remove('hidden');
             if (id === 'map-modal') this.renderWorldMap();
             if (id === 'char-modal') this.renderCharSheet();
+            if (id === 'coop-modal' && typeof Multiplayer !== 'undefined') Multiplayer.refreshModalList();
         }
     },
 
@@ -3116,6 +3249,7 @@ const UI = {
         document.getElementById('hud-char-lvl').textContent = `Nv. ${m.level}`;
         document.getElementById('hud-forte-pct').textContent = `${Math.round(m.forte)}%`;
         document.getElementById('hud-forte-bar').style.width = `${m.forte}%`;
+        document.getElementById('hud-forte-ready')?.classList.toggle('hidden', m.forte < 100);
         document.getElementById('hud-hp-text').textContent = `${Math.round(m.hp)}/${m.maxHp}`;
         document.getElementById('hud-hp-bar').style.width = `${(m.hp / m.maxHp) * 100}%`;
         document.getElementById('hud-stam-bar').style.width = `${Player.stamina}%`;
@@ -3154,6 +3288,11 @@ const UI = {
         document.getElementById('hud-region-name').textContent = nearest.dist < 65 ? nearest.city.name : nearest.city.biome;
         const phase = Engine.timeOfDay < 0.5 ? 'Dia' : 'Crepúsculo';
         document.getElementById('hud-coords').textContent = `X: ${Math.round(Player.pos.x)} | Z: ${Math.round(Player.pos.z)} • ${phase}`;
+
+        // Gentle Nexus Sanctuary regeneration when standing near a city crystal
+        if (nearest.dist < 14 && m.hp < m.maxHp) {
+            m.hp = Math.min(m.maxHp, m.hp + 0.45);
+        }
 
         this.drawMinimap();
     },
@@ -3201,6 +3340,20 @@ const UI = {
                 ctx.fill();
             }
         });
+
+        if (typeof Multiplayer !== 'undefined') {
+            Object.values(Multiplayer.peers).forEach(p => {
+                if (!p.targetPos) return;
+                const dx = (p.targetPos.x - Player.pos.x) * scale;
+                const dz = (p.targetPos.z - Player.pos.z) * scale;
+                if (Math.hypot(dx, dz) < 74) {
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.beginPath();
+                    ctx.arc(cx + dx, cy + dz, 4.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
 
         ctx.save();
         ctx.translate(cx, cy);
@@ -3307,6 +3460,21 @@ const UI = {
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
         ctx.stroke();
+
+        if (typeof Multiplayer !== 'undefined') {
+            Object.values(Multiplayer.peers).forEach(p => {
+                if (!p.targetPos) return;
+                const rx = (p.targetPos.x / 1120 + 0.5) * w;
+                const ry = (p.targetPos.z / 1120 + 0.5) * h;
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(rx, ry, 6.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            });
+        }
 
         canvas.onclick = e => {
             const rect = canvas.getBoundingClientRect();
@@ -3426,6 +3594,302 @@ const SaveSystem = {
 };
 
 // ----------------------------------------------------------------------------
+// 14.5 ONLINE P2P CO-OP MULTIPLAYER ENGINE (PEERJS WEBRTC + LIVE CHAT)
+// ----------------------------------------------------------------------------
+const Multiplayer = {
+    peer: null,
+    myId: null,
+    peers: {},
+    syncTimer: 0,
+    initialized: false,
+
+    init() {
+        if (this.initialized) return;
+        this.initialized = true;
+        this.bindUI();
+
+        if (typeof Peer === 'undefined') {
+            const badge = document.getElementById('coop-peer-badge');
+            if (badge) badge.textContent = 'Modo Offline';
+            return;
+        }
+
+        const customCode = 'SOLIS-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+        try {
+            this.peer = new Peer(customCode);
+            this.peer.on('open', id => {
+                this.myId = id;
+                const idInput = document.getElementById('coop-my-id');
+                const badge = document.getElementById('coop-peer-badge');
+                if (idInput) idInput.value = id;
+                if (badge) badge.textContent = 'Online (P2P Ativo)';
+                this.refreshModalList();
+            });
+
+            this.peer.on('connection', conn => {
+                this.setupConnection(conn);
+            });
+
+            this.peer.on('error', err => {
+                const badge = document.getElementById('coop-peer-badge');
+                if (badge) badge.textContent = 'Erro de Rede';
+                UI.toast(`Co-Op: ${err.type || 'Falha na conexão'}`);
+            });
+        } catch (e) {
+            console.warn('PeerJS init skipped:', e);
+        }
+    },
+
+    bindUI() {
+        document.getElementById('btn-copy-peer-id')?.addEventListener('click', () => {
+            const input = document.getElementById('coop-my-id');
+            if (!input) return;
+            input.select();
+            try { document.execCommand('copy'); } catch (e) {}
+            UI.toast('Código de Mundo copiado! Envie para seu amigo.');
+        });
+
+        document.getElementById('btn-connect-peer')?.addEventListener('click', () => {
+            const targetId = document.getElementById('coop-join-id')?.value.trim();
+            if (!targetId || !this.peer) return;
+            if (targetId === this.myId) {
+                UI.toast('Você não pode conectar ao seu próprio código.');
+                return;
+            }
+            if (this.peers[targetId]) {
+                UI.toast('Você já está conectado a este Resonator!');
+                return;
+            }
+            UI.toast(`Conectando a ${targetId}...`);
+            const conn = this.peer.connect(targetId, { reliable: false });
+            this.setupConnection(conn);
+        });
+
+        const chatInput = document.getElementById('coop-chat-input');
+        const sendChat = () => {
+            if (!chatInput) return;
+            const text = chatInput.value.trim();
+            if (!text) return;
+            chatInput.value = '';
+            chatInput.blur();
+            const sender = Party.active ? Party.active.name : 'Resonator';
+            this.appendChat(sender, text, '#fde047');
+            this.broadcastPacket({ type: 'chat', sender, text });
+        };
+
+        document.getElementById('coop-chat-send')?.addEventListener('click', sendChat);
+        chatInput?.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendChat();
+            }
+        });
+    },
+
+    setupConnection(conn) {
+        conn.on('open', () => {
+            this.peers[conn.peer] = {
+                conn,
+                mesh: null,
+                labelEl: null,
+                targetPos: Player.pos.clone(),
+                targetYaw: 0,
+                isGliding: false,
+                profileKey: '',
+                info: { name: 'Resonator Aliado', level: 1, classId: 'aero_warrior', hp: 1000, maxHp: 1000 }
+            };
+            this.updateCount();
+            this.refreshModalList();
+            this.broadcastState(true);
+            UI.toast(`Aliado conectado ao mundo!`);
+            this.appendChat('SISTEMA', `Um Resonator entrou na sessão (${conn.peer}).`, '#38bdf8');
+        });
+
+        conn.on('data', data => {
+            this.handlePacket(conn.peer, data);
+        });
+
+        const onLeave = () => {
+            const p = this.peers[conn.peer];
+            if (p) {
+                if (p.mesh) Engine.scene.remove(p.mesh);
+                if (p.labelEl) p.labelEl.remove();
+                delete this.peers[conn.peer];
+                this.updateCount();
+                this.refreshModalList();
+                this.appendChat('SISTEMA', `Um Resonator saiu da sessão.`, '#94a3b8');
+            }
+        };
+
+        conn.on('close', onLeave);
+        conn.on('error', onLeave);
+    },
+
+    broadcastPacket(payload) {
+        Object.values(this.peers).forEach(p => {
+            if (p.conn && p.conn.open) {
+                try { p.conn.send(payload); } catch (e) {}
+            }
+        });
+    },
+
+    broadcastState(includeProfile = false) {
+        if (!Party.active || Object.keys(this.peers).length === 0) return;
+        const m = Party.active;
+        const packet = {
+            type: 'state',
+            x: Player.pos.x,
+            y: Player.pos.y,
+            z: Player.pos.z,
+            yaw: Player.yaw,
+            gliding: Player.isGliding,
+            hp: Math.round(m.hp),
+            maxHp: m.maxHp,
+            level: m.level
+        };
+        if (includeProfile) {
+            packet.profile = {
+                name: m.name,
+                gender: m.gender,
+                hairStyle: m.hairStyle,
+                hairColor: m.hairColor,
+                eyeColor: m.eyeColor,
+                skinColor: m.skinColor,
+                outfitColor: m.outfitColor,
+                classId: m.classId
+            };
+        }
+        this.broadcastPacket(packet);
+    },
+
+    handlePacket(peerId, data) {
+        if (!data || typeof data !== 'object') return;
+        if (data.type === 'chat') {
+            this.appendChat(data.sender || 'Aliado', data.text || '', '#38bdf8');
+            return;
+        }
+        const p = this.peers[peerId];
+        if (!p) return;
+
+        if (data.type === 'state') {
+            p.targetPos.set(data.x || 0, data.y || 0, data.z || 0);
+            p.targetYaw = data.yaw || 0;
+            p.isGliding = !!data.gliding;
+            p.info.hp = data.hp ?? p.info.hp;
+            p.info.maxHp = data.maxHp ?? p.info.maxHp;
+            p.info.level = data.level ?? p.info.level;
+
+            if (data.profile) {
+                p.info.name = data.profile.name;
+                p.info.classId = data.profile.classId;
+                const key = JSON.stringify(data.profile);
+                if (key !== p.profileKey) {
+                    p.profileKey = key;
+                    if (p.mesh) Engine.scene.remove(p.mesh);
+                    p.mesh = buildAnimeCharacterMesh(data.profile);
+                    p.mesh.position.copy(p.targetPos);
+                    Engine.scene.add(p.mesh);
+                    this.refreshModalList();
+                }
+            } else if (!p.mesh) {
+                this.broadcastState(true);
+            }
+        }
+    },
+
+    appendChat(sender, text, color = '#f1f5f9') {
+        const box = document.getElementById('coop-chat-messages');
+        if (!box) return;
+        const line = document.createElement('div');
+        line.innerHTML = `<b style="color:${color}">[${sender}]:</b> <span class="text-slate-200"></span>`;
+        line.querySelector('span').textContent = text;
+        box.appendChild(line);
+        box.scrollTop = box.scrollHeight;
+    },
+
+    updateCount() {
+        const el = document.getElementById('coop-count');
+        if (el) el.textContent = `${1 + Object.keys(this.peers).length}`;
+    },
+
+    refreshModalList() {
+        const list = document.getElementById('coop-players-list');
+        if (!list) return;
+        const me = Party.active;
+        list.innerHTML = `
+            <div class="flex items-center justify-between bg-slate-900/90 px-3 py-2 rounded-xl border border-emerald-400/30">
+                <span class="font-bold text-emerald-300"><i class="fa-solid fa-crown mr-1.5"></i>${me ? me.name : 'Você'} (Você)</span>
+                <span class="text-[11px] text-slate-400">Nv. ${me ? me.level : 1}</span>
+            </div>
+        `;
+        Object.entries(this.peers).forEach(([id, p]) => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between bg-slate-900/90 px-3 py-2 rounded-xl border border-sky-400/30 mt-1.5';
+            row.innerHTML = `
+                <span class="font-bold text-sky-300"><i class="fa-solid fa-user-astronaut mr-1.5"></i>${p.info.name}</span>
+                <span class="text-[11px] text-slate-400">Nv. ${p.info.level} • ${id}</span>
+            `;
+            list.appendChild(row);
+        });
+    },
+
+    update(dt) {
+        this.syncTimer += dt;
+        if (this.syncTimer >= 0.08) {
+            this.syncTimer = 0;
+            this.broadcastState(false);
+        }
+
+        const layer = document.getElementById('floating-ui-layer');
+        Object.values(this.peers).forEach(p => {
+            if (!p.mesh) return;
+            const prevPos = p.mesh.position.clone();
+            p.mesh.position.lerp(p.targetPos, Math.min(1, dt * 12));
+            p.mesh.rotation.y = p.targetYaw;
+
+            const rig = p.mesh.userData.rig;
+            if (rig) {
+                if (rig.gliderGroup) rig.gliderGroup.visible = p.isGliding;
+                const moved = p.mesh.position.distanceTo(prevPos) / Math.max(0.001, dt);
+                if (moved > 0.8 && !p.isGliding) {
+                    const t = Engine.clock.getElapsedTime() * 10;
+                    rig.leftLeg.rotation.x = Math.sin(t) * 0.6;
+                    rig.rightLeg.rotation.x = -Math.sin(t) * 0.6;
+                } else {
+                    rig.leftLeg.rotation.x = 0;
+                    rig.rightLeg.rotation.x = 0;
+                }
+            }
+
+            if (!p.labelEl && layer) {
+                p.labelEl = document.createElement('div');
+                p.labelEl.className = 'absolute -translate-x-1/2 -translate-y-full pointer-events-none glass-panel px-2.5 py-1 rounded-lg text-center border-sky-400/50';
+                layer.appendChild(p.labelEl);
+            }
+
+            if (p.labelEl) {
+                const headWorld = p.mesh.position.clone().add(new THREE.Vector3(0, 2.35, 0));
+                const proj = headWorld.project(Engine.camera);
+                if (proj.z > 1 || headWorld.distanceTo(Player.pos) > 75) {
+                    p.labelEl.style.display = 'none';
+                } else {
+                    p.labelEl.style.display = 'block';
+                    p.labelEl.style.left = `${(proj.x * 0.5 + 0.5) * window.innerWidth}px`;
+                    p.labelEl.style.top = `${(-proj.y * 0.5 + 0.5) * window.innerHeight}px`;
+                    const hpPct = Math.max(0, Math.min(100, Math.round((p.info.hp / Math.max(1, p.info.maxHp)) * 100)));
+                    p.labelEl.innerHTML = `
+                        <div class="text-[10px] font-bold text-sky-200 whitespace-nowrap">${p.info.name} <span class="text-amber-300">Nv.${p.info.level}</span></div>
+                        <div class="w-16 h-1 bg-slate-950 rounded-full overflow-hidden mx-auto mt-0.5">
+                            <div class="h-full bg-sky-400" style="width:${hpPct}%"></div>
+                        </div>
+                    `;
+                }
+            }
+        });
+    }
+};
+
+// ----------------------------------------------------------------------------
 // 15. MAIN GAME LOOP & LIFECYCLE CONTROLLER
 // ----------------------------------------------------------------------------
 const Game = {
@@ -3469,6 +3933,8 @@ const Game = {
                 const optShadows = document.getElementById('opt-shadows');
                 if (optShadows) optShadows.onchange = e => {
                     Engine.renderer.shadowMap.enabled = e.target.checked;
+                    Engine.sunLight.castShadow = e.target.checked;
+                    Engine.renderer.shadowMap.needsUpdate = true;
                 };
                 const optAudio = document.getElementById('opt-audio');
                 if (optAudio) optAudio.onchange = e => {
@@ -3504,7 +3970,9 @@ const Game = {
 
         Player.pos.copy(spawnPos);
         Player.init();
+        Combat.initVisuals();
         Enemies.spawnAll();
+        Multiplayer.init();
         UI.updatePartyHUD();
         UI.toast(`Bem-vindo a Solis Archipelago, ${Party.active.name}!`);
     },
@@ -3518,6 +3986,7 @@ const Game = {
             Player.update(dt);
             Combat.update(dt);
             Enemies.update(dt);
+            Multiplayer.update(dt);
             UI.updateHUD();
 
             this.autoSaveTimer += rawDt;
